@@ -1,7 +1,7 @@
 OpenXC MPG
 ============
 
-This program is meant to show off a (possibility) of the [OpenXC][] project. It's awfully rough.
+This program is meant to show off (a possibility of) the [OpenXC][] project. It's awfully rough.
 
 ## Description
 This application uses [OpenXC][] and [AChartEngine][] for its main functionality. It takes in information such as trip distance, trip length, gas consumption
