@@ -1,15 +1,16 @@
 OpenXC MPG
 ============
 
-This program is meant to show off a (possibility) of the [OpenXC][] project.
+This program is meant to show off a (possibility) of the [OpenXC][] project. It's awfully rough.
 
 ## Description
 This application uses [OpenXC][] and [AChartEngine][] for its main functionality. It takes in information such as trip distance, trip length, gas consumption
-and vehicle speed to determine your current fuel usage and fuel usage over a drive. After a drive is completed your fuel consumption/fuel effeciency rating
-for that trip is saved to a local SQLite database.
+and vehicle speed to determine your current fuel usage and fuel usage over a drive. After a drive is completed your fuel consumption/fuel efficiency is calculated and
+ saved to a local SQLite database.
 
 ## Running
-This project was built with eclipse. Take a look under bin/testopenxc.apk to see if that installs. It probably won't.
+This project was built with [Eclipse][], it can probably be imported back into there as well. 
+Otherwise take a look under bin/testopenxc.apk to see if that installs. It probably won't.
 
 ## License
 
@@ -18,3 +19,4 @@ Licensed under the [Apache License, Version 2.0][apache]
 [apache]: http://www.apache.org/licenses/LICENSE-2.0.html
 [OpenXC]: http://openxcplatform.com
 [AChartEngine]: http://www.achartengine.org/
+[Eclipse]: http://eclipse.org/
