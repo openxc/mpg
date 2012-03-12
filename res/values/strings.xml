@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, OpenXCTestActivity!</string>
+    <string name="app_name">Testopenxc</string>
+    <string name="lSpeed">Speed: </string>
+    <string name="tSpeed">undefinded</string>
+    <string name="lMPG">Liters Per Kilometer:</string>
+    <string name="tMPG">undefined</string>
+    <string name="lScroll">Scrolling:</string>
+    <string name="tButton">On</string>
+    <string name="settingsTitle">Show Current Settings</string>
+    <string name="exitTitle">Close</string>
+    <string name="saveTitle">Manual Save</string>
+    <string name="mileTitle">View Overview</string>
+
+</resources>

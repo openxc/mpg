@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory 
+        android:title="Something"
+        android:summary="Something else">
+	    
+	    <ListPreference 
+	        android:key="update_interval"
+	        android:title="Update Interval"
+	        android:summary="How often do you want updates to occur?"
+	        android:defaultValue="3000"
+	        android:entries="@array/updateInterval"
+	        android:entryValues="@array/updateIntervalValues"
+	  	/>
+	</PreferenceCategory>
+
+</PreferenceScreen>
