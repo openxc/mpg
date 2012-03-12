@@ -4,12 +4,12 @@ OpenXC MPG
 This program is meant to show off a (possibility) of the [OpenXC][] project.
 
 ## Description
-This application uses OpenXC and AChartEngine for its main functionality. It takes in information such as trip distance, trip length, gas consumption
+This application uses [OpenXC][] and [AChartEngine][] for its main functionality. It takes in information such as trip distance, trip length, gas consumption
 and vehicle speed to determine your current fuel usage and fuel usage over a drive. After a drive is completed your fuel consumption/fuel effeciency rating
 for that trip is saved to a local SQLite database.
 
 ## Running
-This project was built with eclipse. That's all I know :(, I just press buttons.
+This project was built with eclipse. Take a look under bin/testopenxc.apk to see if that installs. It probably won't.
 
 ## License
 
