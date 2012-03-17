@@ -109,81 +109,20 @@ void setup() {
 }
 
 void loop() {
-  float lastGas = 0;  
-  float lastDist = 0;
-  float lastVel = 0;
-  while(1) {
-        int choice = random(0);
-        int measurementChoice;
-        int stateSignalIndex;
-        switch (choice) {
-          case 0:
-            measurementChoice = random(NUMERICAL_SIGNAL_COUNT);
-            if (measurementChoice == 10) { /* these values should not be hardcoded */
-              lastGas = lastGas + (random(10)+random(10) * .1);
-              writeNumericalMeasurement(NUMERICAL_SIGNALS[10], lastGas);
-            }
-            else if (measurementChoice == 6) {
-              measurementChoice == 3;
-            }
-            else if (measurementChoice == 3) {
-              boolean symbol = true; /* true is positive, false is negative */
-              
-              if (lastVel > 120) {
-                random(3) == 0 ? symbol=true : symbol=false; /* Bias towards a negative value */
-              }
-              else if (lastVel < 20) {
-                random(3) == 0 ? symbol=false : symbol=true; /* Bias towards a positive value */
-              }
-              else {
-                random(2) == 0 ? symbol=false : symbol=true; /* Even chance of 0 */
-              }
-              
-              if(symbol) {
-                lastVel = lastVel + random(10);
-              }
-              else {
-                lastVel = lastVel - random(10);
-              }
-              
-              writeNumericalMeasurement(NUMERICAL_SIGNALS[3], lastVel);
-              lastDist = lastDist + (lastVel * 0.9); /* 0.9 is out my ass */
-              writeNumericalMeasurement(NUMERICAL_SIGNALS[7], lastDist);
-            }
-            else {
-              writeNumericalMeasurement(
-                      NUMERICAL_SIGNALS[measurementChoice],
-                      random(101) + random(100) * .1);
-            }
-            break;
-          
-          case 1:
-            writeBooleanMeasurement(BOOLEAN_SIGNALS[random(BOOLEAN_SIGNAL_COUNT)],
-                    random(2) == 1 ? true : false);
-            break;
-          
-          case 2:
-            stateSignalIndex = random(STATE_SIGNAL_COUNT);
-            if (stateSignalIndex == 1) {
-              if (random(10000) == 40) { /* reduces chance of off signal to less */
-                writeStateMeasurement(STATE_SIGNALS[1], SIGNAL_STATES[1][0]);
-              }
-            }
-            else {
-              writeStateMeasurement(STATE_SIGNALS[stateSignalIndex],
-                    SIGNAL_STATES[stateSignalIndex][random(3)]);
-            }
-            break;
-          
-          case 3:
-            int eventSignalIndex = random(EVENT_SIGNAL_COUNT);
-            writeEventMeasurement(EVENT_SIGNALS[eventSignalIndex],
-                    EVENT_SIGNAL_STATES[eventSignalIndex][random(3)]);
-            break;
-        }
-        delay(300);
-        /* lastGas = lastGas + .0001;
-        writeNumericalMeasurement(NUMERICAL_SIGNALS[10], lastGas); */
+    while(1) {
+        writeNumericalMeasurement(
+                NUMERICAL_SIGNALS[random(NUMERICAL_SIGNAL_COUNT)],
+                random(101) + random(100) * .1);
+        writeBooleanMeasurement(BOOLEAN_SIGNALS[random(BOOLEAN_SIGNAL_COUNT)],
+                random(2) == 1 ? true : false);
+
+        int stateSignalIndex = random(STATE_SIGNAL_COUNT);
+        writeStateMeasurement(STATE_SIGNALS[stateSignalIndex],
+                SIGNAL_STATES[stateSignalIndex][random(3)]);
+
+        int eventSignalIndex = random(EVENT_SIGNAL_COUNT);
+        writeEventMeasurement(EVENT_SIGNALS[eventSignalIndex],
+                EVENT_SIGNAL_STATES[eventSignalIndex][random(3)]);
     }
 }
 
