@@ -71,8 +71,8 @@ public class OpenXCTestActivity extends Activity {
 	private double lastUsageCount = 0;
 	
 	private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer(2);
-	private XYSeries speedSeries = new XYSeries("Speed");
-	private XYSeries gasSeries = new XYSeries("Gas Consumed"); // FIXME strings should be hardcoded
+	private XYSeries speedSeries = new XYSeries("Speed", 0);
+	private XYSeries gasSeries = new XYSeries("Gas Consumed", 1); // FIXME strings should be hardcoded
 	private GraphicalView mChartView;
 	
 	final static String TAG = "XCTest";
@@ -122,25 +122,30 @@ public class OpenXCTestActivity extends Activity {
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
         dataset.addSeries(speedSeries);
         dataset.addSeries(gasSeries);
-        XYSeries optimalSpeed = new XYSeries("Optimal Speed"); //TODO String should be referenced from strings.xml
-        optimalSpeed.add(0, OPTIMAL_SPEED); optimalSpeed.add(Integer.MAX_VALUE, OPTIMAL_SPEED);
-        dataset.addSeries(optimalSpeed);
+
+     //   XYSeries optimalSpeed = new XYSeries("Optimal Speed"); //TODO String should be referenced from strings.xml
+     //   optimalSpeed.add(0, OPTIMAL_SPEED); optimalSpeed.add(Integer.MAX_VALUE, OPTIMAL_SPEED);
+     //   dataset.addSeries(optimalSpeed);
         XYSeriesRenderer sRenderer = new XYSeriesRenderer();
         XYSeriesRenderer gRenderer = new XYSeriesRenderer();
-        mRenderer.addSeriesRenderer(0, sRenderer);
-        mRenderer.addSeriesRenderer(1, gRenderer);
-        mRenderer.addSeriesRenderer(new XYSeriesRenderer());
+        mRenderer.addSeriesRenderer(sRenderer);
+        mRenderer.addSeriesRenderer(gRenderer);
+   //     mRenderer.addSeriesRenderer(new XYSeriesRenderer());
         sRenderer.setPointStyle(PointStyle.X);
         sRenderer.setColor(Color.RED);
-        gRenderer.setFillBelowLine(true);
+        gRenderer.setFillBelowLine(false);
+        gRenderer.setPointStyle(PointStyle.CIRCLE);
+        gRenderer.setFillPoints(true);
         
-        mRenderer.setYTitle("Speed (km/s)", 0);
-        mRenderer.setYAxisAlign(Align.LEFT, 0);
         mRenderer.setXTitle("Time (ms)");
+        mRenderer.setYTitle("Speed (km/s)");
+        mRenderer.setXLabelsAlign(Align.RIGHT);
+        mRenderer.setYLabelsAlign(Align.RIGHT);
+        
         mRenderer.setYTitle("Fuel Usage (litres)", 1);
         mRenderer.setYAxisAlign(Align.RIGHT, 1);
-       
-        
+        mRenderer.setYLabelsAlign(Align.LEFT, 1);
+               
         mRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
         mChartView = ChartFactory.getLineChartView(this, dataset, mRenderer);
         mChartView.addPanListener(panListener);
@@ -191,7 +196,7 @@ public class OpenXCTestActivity extends Activity {
     				}
     			});
                 double time = getTime();
-                drawGraph((time-START_TIME), Double.parseDouble(measure), -1); //because I'm an idiot
+             //   drawGraph((time-START_TIME), Double.parseDouble(measure), -1); //because I'm an idiot
             }
             else {
             	Log.w(TAG, "This should not run, you have a bug");
@@ -299,6 +304,10 @@ public class OpenXCTestActivity extends Activity {
 		 Log.i(TAG, "Time is: "+time+". Speed is: "+speed+". Gas is: "+gas);
          speedSeries.add(time, speed);
          gasSeries.add(time, gas);
+         Log.i(TAG, "MaxX Gas is: "+gasSeries.getMaxX());
+         Log.i(TAG, "MaxX Speed is: "+gasSeries.getMaxX());
+         Log.i(TAG, "MinX: "+gasSeries.getMinX());
+         Log.i(TAG, "Scale: "+gasSeries.getScaleNumber());
          if (scrollGraph) {
        	  if (time > 50000) { // FIXME should be a preference
            	  double max = speedSeries.getMaxX();
@@ -352,10 +361,11 @@ public class OpenXCTestActivity extends Activity {
 	
 	private double getGasConsumed() {
 		FuelConsumed fuel;
-		double temp = -1;
+		double temp = 0;
 		try {
 			fuel = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			temp = fuel.getValue().doubleValue();
+			Log.w(TAG, "Temp is "+temp);
 		} catch (UnrecognizedMeasurementTypeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -365,6 +375,9 @@ public class OpenXCTestActivity extends Activity {
 		}
 		double diff = temp - lastUsageCount;
 		lastUsageCount = temp;
+		if (diff > 1) { // catch bogus values
+			diff = 0;
+		}
 		return diff;
 	}
 	
