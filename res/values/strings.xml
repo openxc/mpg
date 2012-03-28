@@ -9,9 +9,15 @@
     <string name="tMPG">undefined</string>
     <string name="lScroll">Scrolling:</string>
     <string name="tButton">On</string>
-    <string name="settingsTitle">Show Current Settings</string>
+    <string name="settingsTitle">Settings</string>
     <string name="exitTitle">Close</string>
     <string name="saveTitle">Manual Save</string>
     <string name="mileTitle">View Overview</string>
+    <string name="labelTime">Date of Trip: </string>
+    <string name="labelDistance">Distance Traveled: </string>
+    <string name="labelGasMileage">Gas Mileage: </string>
+    <string name="labelGas">Petrol Used: </string>    
+    <string name="labelLength">Length of trip: </string>
+    <string name="createDataTitle">Create Data</string>
 
 </resources>

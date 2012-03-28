@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item android:id="@+id/settings"
+    	  android:title="@string/settingsTitle"
+    />
+    
+    <item android:id="@+id/viewOverview"
+    	  android:title="@string/mileTitle"
+    	  android:showAsAction="ifRoom" 
+    />
+        
+    <item android:id="@+id/manualSave"
+    	  android:title="@string/saveTitle"
+    	  android:showAsAction="ifRoom"
+    />
+    
+    <item android:id="@+id/createData"
+    	  android:title="@string/createDataTitle"
+    />
+    
+    <item android:id="@+id/close"
+    	  android:title="@string/exitTitle"
+    	  android:showAsAction="ifRoom"
+    />
+
+</menu>

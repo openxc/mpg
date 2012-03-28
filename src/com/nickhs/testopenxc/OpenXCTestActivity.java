@@ -2,7 +2,6 @@ package com.nickhs.testopenxc;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
-import org.achartengine.chart.PointStyle;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
@@ -19,19 +18,18 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Color;
-import android.graphics.Paint.Align;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -62,7 +60,6 @@ public class OpenXCTestActivity extends Activity {
 	DbHelper dbHelper;
 	private boolean isBound = false;	
 	private double START_TIME = -1;
-	private final Handler handler = new Handler(); //FIXME is this needed?
 	private boolean instantUpdate = false;
 	private boolean scrollGraph = true;
 	private boolean pollMeasurements = false;
@@ -70,10 +67,12 @@ public class OpenXCTestActivity extends Activity {
 	private static int OPTIMAL_SPEED = 97;
 	private double lastUsageCount = 0;
 	
-	private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer(2);
-	private XYSeries speedSeries = new XYSeries("Speed", 0);
-	private XYSeries gasSeries = new XYSeries("Gas Consumed", 1); // FIXME strings should be hardcoded
-	private GraphicalView mChartView;
+	private XYMultipleSeriesRenderer mSpeedRenderer = new XYMultipleSeriesRenderer();
+	private XYMultipleSeriesRenderer mGasRenderer = new XYMultipleSeriesRenderer();
+	private XYSeries speedSeries = new XYSeries("Speed");
+	private XYSeries gasSeries = new XYSeries("Gas Consumed"); // FIXME strings should be hardcoded
+	private GraphicalView mSpeedChartView;
+	private GraphicalView mGasChartView;
 	
 	final static String TAG = "XCTest";
 	
@@ -97,7 +96,8 @@ public class OpenXCTestActivity extends Activity {
 			public void onClick(View v) {
 				scrollGraph = !scrollGraph;
 				scroll.setChecked(scrollGraph);
-				mRenderer.setYAxisMin(0);
+				mSpeedRenderer.setYAxisMin(0);
+				mGasRenderer.setYAxisMin(0);
 				Log.i(TAG, "Scroll Lock clicked");
 			}
 		});
@@ -107,60 +107,43 @@ public class OpenXCTestActivity extends Activity {
        	
        	dbHelper = new DbHelper(this);
        	
-        mRenderer.setApplyBackgroundColor(true);
-        mRenderer.setBackgroundColor(Color.argb(100, 50, 50, 50));
-        mRenderer.setAxisTitleTextSize(16);
-        mRenderer.setChartTitleTextSize(20);
-        mRenderer.setLabelsTextSize(15);
-        mRenderer.setLegendTextSize(15);
-        mRenderer.setShowGrid(true);
-        mRenderer.setYAxisMax(100);
-        mRenderer.setYAxisMin(0);
-        mRenderer.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
+        XYMultipleSeriesDataset gDataset = initGraph(mGasRenderer, gasSeries);
+        XYMultipleSeriesDataset sDataset = initGraph(mSpeedRenderer, speedSeries);
         
-        LinearLayout layout = (LinearLayout) findViewById(R.id.chart);
-        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-        dataset.addSeries(speedSeries);
-        dataset.addSeries(gasSeries);
+        mSpeedRenderer.setXTitle("Time (ms)");
+        mSpeedRenderer.setYTitle("Speed (km/h)");
+        
+        mGasRenderer.setXTitle("Time (ms)");
+        mGasRenderer.setYTitle("Fuel Usage (litres)");
+              
+        XYSeries optimalSpeed = new XYSeries("Optimal Speed"); //TODO String should be referenced from strings.xml
+        optimalSpeed.add(0, OPTIMAL_SPEED); optimalSpeed.add(Integer.MAX_VALUE, OPTIMAL_SPEED);
+        sDataset.addSeries(optimalSpeed);
+        mSpeedRenderer.addSeriesRenderer(1, new XYSeriesRenderer());
+        
+        mSpeedRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
+        mGasRenderer.setRange(new double[] {0, 50000, 0, 0.03});
+        
+        FrameLayout topLayout = (FrameLayout) findViewById(R.id.topChart);
+        FrameLayout botLayout = (FrameLayout) findViewById(R.id.botChart);
 
-     //   XYSeries optimalSpeed = new XYSeries("Optimal Speed"); //TODO String should be referenced from strings.xml
-     //   optimalSpeed.add(0, OPTIMAL_SPEED); optimalSpeed.add(Integer.MAX_VALUE, OPTIMAL_SPEED);
-     //   dataset.addSeries(optimalSpeed);
-        XYSeriesRenderer sRenderer = new XYSeriesRenderer();
-        XYSeriesRenderer gRenderer = new XYSeriesRenderer();
-        mRenderer.addSeriesRenderer(sRenderer);
-        mRenderer.addSeriesRenderer(gRenderer);
-   //     mRenderer.addSeriesRenderer(new XYSeriesRenderer());
-        sRenderer.setPointStyle(PointStyle.X);
-        sRenderer.setColor(Color.RED);
-        gRenderer.setFillBelowLine(false);
-        gRenderer.setPointStyle(PointStyle.CIRCLE);
-        gRenderer.setFillPoints(true);
+        mSpeedChartView = ChartFactory.getTimeChartView(this, sDataset, mSpeedRenderer, null);
+        mSpeedChartView.addPanListener(panListener);
+        mSpeedChartView.addZoomListener(zoomListener, false, true);
+        topLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
         
-        mRenderer.setXTitle("Time (ms)");
-        mRenderer.setYTitle("Speed (km/s)");
-        mRenderer.setXLabelsAlign(Align.RIGHT);
-        mRenderer.setYLabelsAlign(Align.RIGHT);
-        
-        mRenderer.setYTitle("Fuel Usage (litres)", 1);
-        mRenderer.setYAxisAlign(Align.RIGHT, 1);
-        mRenderer.setYLabelsAlign(Align.LEFT, 1);
-               
-        mRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
-        mChartView = ChartFactory.getLineChartView(this, dataset, mRenderer);
-        mChartView.addPanListener(panListener);
-        mChartView.addZoomListener(zoomListener, false, true);
-        layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-        
+        mGasChartView = ChartFactory.getTimeChartView(this, gDataset, mGasRenderer, null);
+        mGasChartView.addPanListener(panListener);
+        mGasChartView.addZoomListener(zoomListener, false, true);
+        botLayout.addView(mGasChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+                
         START_TIME = getTime();
     }
     
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, 0, Menu.NONE, R.string.settingsTitle);
-		menu.add(0, 1, Menu.NONE, R.string.exitTitle);
-		menu.add(0, 2, Menu.NONE, R.string.saveTitle);
-		menu.add(0, 3, Menu.NONE, R.string.mileTitle);
+    	MenuInflater inflater = getMenuInflater();
+    	inflater.inflate(R.menu.menu, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -168,17 +151,22 @@ public class OpenXCTestActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Log.i(TAG, "Option Selected "+item.getItemId());
 		switch (item.getItemId()) {
-		case 0:
+		case R.id.settings:
 			startActivity(new Intent(this, ShowSettingsActivity.class));
 			break;
-		case 1:
+		case R.id.close:
 			System.exit(0);
 			break;
-		case 2:
+		case R.id.manualSave:
 			manualSave();
 			break;
-		case 3:
+		case R.id.viewOverview:
+			Log.e(TAG, "viewing overview!");
 			startActivity(new Intent(this, MileageActivity.class));
+			break;
+		case R.id.createData:
+			Log.i(TAG, "running create test data");
+			dbHelper.createTestData(1);
 			break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -217,15 +205,14 @@ public class OpenXCTestActivity extends Activity {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			VehicleServiceBinder binder = (VehicleServiceBinder) service;
 			vehicleService = binder.getService();
-			// vehicleService.waitUntilBound();
 			Log.i(TAG, "Remote Vehicle Service bound");
 			try {
-				vehicleService.setDataSource(TraceVehicleDataSource.class.getName(), "resource://"+R.raw.drivingc);
+				vehicleService.setDataSource(TraceVehicleDataSource.class.getName(), "resource://"+R.raw.driving2);
 			} catch (RemoteVehicleServiceException e) {
 				Log.e(TAG, "RemoteVehicleException occurred");
 				Log.e(TAG, e.getMessage());
 			}
-			/* try { // FIXME renable listener when ready
+		/*	try { // FIXME renable listener when ready
 				vehicleService.addListener(IgnitionStatus.class, ignitionListener);
 			} catch (RemoteVehicleServiceException e) {
 				e.printStackTrace();
@@ -311,12 +298,15 @@ public class OpenXCTestActivity extends Activity {
          if (scrollGraph) {
        	  if (time > 50000) { // FIXME should be a preference
            	  double max = speedSeries.getMaxX();
-           	  mRenderer.setXAxisMax(max+POLL_FREQUENCY);
-           	  mRenderer.setXAxisMin(max-50000); //FIXME
+           	  mSpeedRenderer.setXAxisMax(max+POLL_FREQUENCY);
+           	  mSpeedRenderer.setXAxisMin(max-50000); //FIXME
+           	  mGasRenderer.setXAxisMax(max+POLL_FREQUENCY);
+           	  mGasRenderer.setXAxisMin(max-50000);
        	  }
          }
-         if (mChartView != null) {
-       	  mChartView.repaint();
+         if (mSpeedChartView != null) {
+       	  mSpeedChartView.repaint();
+       	  mGasChartView.repaint();
          }
 	}
    
@@ -353,8 +343,7 @@ public class OpenXCTestActivity extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoValueException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.w(TAG, "Failed to get speed measurement");
 		}
 		return temp;
 	}
@@ -365,19 +354,21 @@ public class OpenXCTestActivity extends Activity {
 		try {
 			fuel = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			temp = fuel.getValue().doubleValue();
+			
 			Log.w(TAG, "Temp is "+temp);
 		} catch (UnrecognizedMeasurementTypeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoValueException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.w(TAG, "Failed to get fuel measurement");
 		}
+		
 		double diff = temp - lastUsageCount;
 		lastUsageCount = temp;
 		if (diff > 1) { // catch bogus values
 			diff = 0;
 		}
+		
 		return diff;
 	}
 	
@@ -494,5 +485,25 @@ public class OpenXCTestActivity extends Activity {
 		} catch (NoValueException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private XYMultipleSeriesDataset initGraph(XYMultipleSeriesRenderer rend, XYSeries series) {
+		rend.setApplyBackgroundColor(true);
+        rend.setBackgroundColor(Color.argb(100, 50, 50, 50));
+        rend.setAxisTitleTextSize(16);
+        rend.setChartTitleTextSize(20);
+        rend.setLabelsTextSize(15);
+        rend.setLegendTextSize(15);
+        rend.setShowGrid(true);
+        rend.setYAxisMax(100);
+        rend.setYAxisMin(0);
+        rend.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
+        
+        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+        dataset.addSeries(series);        
+        
+        XYSeriesRenderer tempRend = new XYSeriesRenderer();
+        rend.addSeriesRenderer(tempRend);
+        return dataset;
 	}
 }

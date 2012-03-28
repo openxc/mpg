@@ -83,6 +83,22 @@
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
-        android:orientation="horizontal" />
+        android:orientation="vertical" >
+
+        <FrameLayout
+            android:id="@+id/topChart"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.40" >
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/botChart"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.40" >
+
+        </FrameLayout>
+    </LinearLayout>
 
 </LinearLayout>

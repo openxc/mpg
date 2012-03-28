@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+	<item android:id="@+id/dateRefine"
+	      android:text="Refine date range"
+	      android:showAsAction="ifRoom"
+	      android:titleCondensed="Date"
+	      android:actionViewClass="android.widget.EditText" />
+    
+</menu>

@@ -21,35 +21,64 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int buttonLayout=0x7f090007;
-        public static final int chart=0x7f09000a;
-        public static final int chartM=0x7f09000b;
-        public static final int labelMPG=0x7f090005;
-        public static final int labelScroll=0x7f090008;
-        public static final int labelSpeed=0x7f090002;
-        public static final int mpgLayout=0x7f090004;
-        public static final int speedLayout=0x7f090001;
-        public static final int textMPG=0x7f090006;
-        public static final int textSpeed=0x7f090003;
-        public static final int toggleButton1=0x7f090009;
-        public static final int topLayout=0x7f090000;
+        public static final int botChart=0x7f0a0015;
+        public static final int buttonLayout=0x7f0a0010;
+        public static final int chart=0x7f0a0013;
+        public static final int chartM=0x7f0a0016;
+        public static final int close=0x7f0a001b;
+        public static final int createData=0x7f0a001a;
+        public static final int dataDistance=0x7f0a0008;
+        public static final int dataGas=0x7f0a0004;
+        public static final int dataGasMileage=0x7f0a0006;
+        public static final int dataLength=0x7f0a0002;
+        public static final int dataTime=0x7f0a0001;
+        public static final int dateRefine=0x7f0a001c;
+        public static final int labelDistance=0x7f0a0007;
+        public static final int labelGas=0x7f0a0003;
+        public static final int labelGasMileage=0x7f0a0005;
+        public static final int labelMPG=0x7f0a000e;
+        public static final int labelScroll=0x7f0a0011;
+        public static final int labelSpeed=0x7f0a000b;
+        public static final int labelTime=0x7f0a0000;
+        public static final int manualSave=0x7f0a0019;
+        public static final int mpgLayout=0x7f0a000d;
+        public static final int settings=0x7f0a0017;
+        public static final int speedLayout=0x7f0a000a;
+        public static final int textMPG=0x7f0a000f;
+        public static final int textSpeed=0x7f0a000c;
+        public static final int toggleButton1=0x7f0a0012;
+        public static final int topChart=0x7f0a0014;
+        public static final int topLayout=0x7f0a0009;
+        public static final int viewOverview=0x7f0a0018;
     }
     public static final class layout {
-        public static final int main=0x7f030000;
-        public static final int mileage=0x7f030001;
+        public static final int custom_dialog=0x7f030000;
+        public static final int main=0x7f030001;
+        public static final int mileage=0x7f030002;
+    }
+    public static final class menu {
+        public static final int menu=0x7f090000;
+        public static final int menu2=0x7f090001;
     }
     public static final class raw {
         public static final int driving=0x7f050000;
-        public static final int drivingc=0x7f050001;
-        public static final int idling=0x7f050002;
+        public static final int driving2=0x7f050001;
+        public static final int drivingc=0x7f050002;
+        public static final int idling=0x7f050003;
     }
     public static final class string {
         public static final int app_name=0x7f060000;
+        public static final int createDataTitle=0x7f060011;
         public static final int exitTitle=0x7f060009;
         public static final int hello=0x7f060001;
         public static final int lMPG=0x7f060004;
         public static final int lScroll=0x7f060006;
         public static final int lSpeed=0x7f060002;
+        public static final int labelDistance=0x7f06000d;
+        public static final int labelGas=0x7f06000f;
+        public static final int labelGasMileage=0x7f06000e;
+        public static final int labelLength=0x7f060010;
+        public static final int labelTime=0x7f06000c;
         public static final int mileTitle=0x7f06000b;
         public static final int saveTitle=0x7f06000a;
         public static final int settingsTitle=0x7f060008;
