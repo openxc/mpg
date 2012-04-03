@@ -39,6 +39,7 @@ import com.openxc.VehicleService.VehicleServiceBinder;
 import com.openxc.measurements.FineOdometer;
 import com.openxc.measurements.FuelConsumed;
 import com.openxc.measurements.IgnitionStatus;
+import com.openxc.measurements.IgnitionStatus.IgnitionPosition;
 import com.openxc.measurements.UnrecognizedMeasurementTypeException;
 import com.openxc.measurements.VehicleMeasurement;
 import com.openxc.measurements.VehicleSpeed;
@@ -260,10 +261,12 @@ public class OpenXCTestActivity extends Activity {
 	IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
 		@Override
 		public void receive(VehicleMeasurement arg0) {
-			IgnitionStatus status = (IgnitionStatus) arg0;
-			String stats = status.getValue().toString();
-			Log.d(TAG, "Ignition Status is: "+stats);
-			if (status.getValue().toString().equalsIgnoreCase("State{value=OFF}")) {
+			IgnitionPosition ignitionPosition = 
+                    ((IgnitionStatus) arg0).getValue().enumValue();
+			Log.d(TAG, "Ignition Status is: " + ignitionPosition);
+			if (ignitionPosition == IgnitionPosition.OFF) {
+                Log.i(TAG, "Ignition is " + ignitionPosition + 
+                        " -- recording a data point");
 				try {
 					FineOdometer oMeas = (FineOdometer) vehicleService.get(FineOdometer.class);
 					double distanceTravelled = oMeas.getValue().doubleValue();
