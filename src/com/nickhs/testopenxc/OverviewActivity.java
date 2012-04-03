@@ -84,10 +84,13 @@ public class OverviewActivity extends Activity {
 		Cursor c = dbHelper.getLastData(todayStart.toString(pattern), todayEnd.toString(pattern), DbHelper.C_MILEAGE);
 		if(c.moveToLast()) {
             String sLastTrip = new DecimalFormat("##").format(c.getDouble(0));
-            c.moveToPrevious();
-            String sPreviousTrip = new DecimalFormat("##").format(c.getDouble(0));
-            lastMileage.setText(sLastTrip);
-            previousMileage.setText(sPreviousTrip);
+            if(c.moveToPrevious()) {
+                String sPreviousTrip = new DecimalFormat("##").format(c.getDouble(0));
+                lastMileage.setText(sLastTrip);
+                previousMileage.setText(sPreviousTrip);
+            } else {
+                Log.i(TAG, "Could't find any matching rows in the database");
+            }
         } else {
             Log.i(TAG, "Could't find any matching rows in the database");
         }
