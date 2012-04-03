@@ -166,8 +166,10 @@ public class OpenXCTestActivity extends Activity {
 			break;
 		case R.id.createData:
 			Log.i(TAG, "running create test data");
-			dbHelper.createTestData(1);
+			dbHelper.createTestData(100);
 			break;
+		case R.id.viewGraphs:
+			startActivity(new Intent(this, OverviewActivity.class));
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -206,8 +208,9 @@ public class OpenXCTestActivity extends Activity {
 			VehicleServiceBinder binder = (VehicleServiceBinder) service;
 			vehicleService = binder.getService();
 			Log.i(TAG, "Remote Vehicle Service bound");
-			try {
+			/* try {
 				vehicleService.setDataSource(TraceVehicleDataSource.class.getName(), "resource://"+R.raw.driving2);
+				makeToast("Using trace file");
 			} catch (RemoteVehicleServiceException e) {
 				Log.e(TAG, "RemoteVehicleException occurred");
 				Log.e(TAG, e.getMessage());

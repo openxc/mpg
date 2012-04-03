@@ -11,5 +11,10 @@
 			<attribute name="javadoc_location" value="jar:file:/home/nick/Downloads/achartengine-0.7.0-javadocs.zip!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/home/nick/Desktop/joda-time-2.1.jar" sourcepath="/home/nick/Desktop/joda-time-2.1-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/home/nick/Desktop/joda-time-2.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

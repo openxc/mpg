@@ -16,8 +16,19 @@
     <string name="labelTime">Date of Trip: </string>
     <string name="labelDistance">Distance Traveled: </string>
     <string name="labelGasMileage">Gas Mileage: </string>
-    <string name="labelGas">Petrol Used: </string>    
+    <string name="labelGas">Gas Used: </string>    
     <string name="labelLength">Length of trip: </string>
     <string name="createDataTitle">Create Data</string>
+    <string name="viewGraphs">View Graphs</string>
+    <string name="currentUsage">00</string>
+    <string name="lastUsage">00</string>
+    <string name="lYesterday">Yesterday\'s Usage: </string>
+    <string name="lUnits">L</string>
+    <string name="lTitle">Daily Gas Usage</string>
+    <string name="lastTrip">00</string>
+    <string name="previousTrip">00</string>
+    <string name="lPreviousTrip">Previous Trip: </string>
+    <string name="lUnitsTrip">km/l</string>
+    <string name="lTitle2">Last Trip Gas Mileage</string>
 
 </resources>

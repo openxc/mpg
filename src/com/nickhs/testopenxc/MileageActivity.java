@@ -89,7 +89,6 @@ public class MileageActivity extends Activity {
         mRenderer.setYTitle("Gas Mileage");		
         LinearLayout layout = (LinearLayout) findViewById(R.id.chartM);
         layout.addView(chart, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-        
 	}
 
 	@Override

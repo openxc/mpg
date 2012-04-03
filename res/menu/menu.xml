@@ -23,5 +23,10 @@
     	  android:title="@string/exitTitle"
     	  android:showAsAction="ifRoom"
     />
+    
+    <item android:id="@+id/viewGraphs"
+          android:title="@string/viewGraphs"
+          android:showAsAction="ifRoom"
+    />
 
 </menu>
