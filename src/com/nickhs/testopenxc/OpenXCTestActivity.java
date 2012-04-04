@@ -361,7 +361,7 @@ public class OpenXCTestActivity extends Activity {
 			fuel = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			temp = fuel.getValue().doubleValue();
 			
-			Log.w(TAG, "Temp is "+temp);
+			Log.i(TAG, "Temp is "+temp);
 		} catch (UnrecognizedMeasurementTypeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
