@@ -61,9 +61,7 @@ public class OpenXCTestActivity extends Activity {
 	DbHelper dbHelper;
 	private boolean isBound = false;	
 	private double START_TIME = -1;
-	private boolean instantUpdate = false;
 	private boolean scrollGraph = true;
-	private boolean pollMeasurements = false;
 	private int POLL_FREQUENCY = -1;
 	private static int OPTIMAL_SPEED = 97;
 	private double lastUsageCount = 0;
@@ -175,26 +173,6 @@ public class OpenXCTestActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
     
-	VehicleSpeed.Listener speedListener = new VehicleSpeed.Listener() {
-        public void receive(VehicleMeasurement measurement) {
-            if (instantUpdate) {
-            	final VehicleSpeed meas = (VehicleSpeed) measurement;
-            	final String measure = Double.toString(meas.getValue().doubleValue());
-                speed.post(new Runnable() {
-    				@Override
-    				public void run() {
-    		            speed.setText(measure);
-    				}
-    			});
-                double time = getTime();
-             //   drawGraph((time-START_TIME), Double.parseDouble(measure), -1); //because I'm an idiot
-            }
-            else {
-            	Log.w(TAG, "This should not run, you have a bug");
-            }
-        }
-    };
-    
     public ServiceConnection mConnection = new ServiceConnection() {
 		
 		@Override
@@ -277,7 +255,6 @@ public class OpenXCTestActivity extends Activity {
 					Log.i(TAG, "Last trip gas mileage was: "+gasMileage);
 					vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
 				//	makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
-					pollStop();
 					double endTime = getTime();
 					dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, START_TIME, endTime);
 					Intent intent = new Intent(getApplicationContext(), MileageActivity.class);
@@ -317,12 +294,11 @@ public class OpenXCTestActivity extends Activity {
 	}
    
 	private void updateMeasurements() {
-		pollMeasurements = true;
 		if(isBound) {
 	   		new Thread(new Runnable () {
 					@Override
 					public void run() {
-		        		while(pollMeasurements) {
+		        		while(true) {
 		        			getMeasurements();
 		        			try {
 		        				Log.i(TAG, "Sleeping for "+POLL_FREQUENCY);
@@ -335,7 +311,7 @@ public class OpenXCTestActivity extends Activity {
 	   		}).start();
 	   	}
 	   	else {
-	   		Log.e(TAG, "We're going down!");
+	   		Log.e(TAG, "Service not bound - breaking");
 	   	}
 	}
 	
@@ -346,7 +322,6 @@ public class OpenXCTestActivity extends Activity {
 			speed = (VehicleSpeed) vehicleService.get(VehicleSpeed.class);
 			temp = speed.getValue().doubleValue();
 		} catch (UnrecognizedMeasurementTypeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoValueException e) {
 			Log.w(TAG, "Failed to get speed measurement");
@@ -360,10 +335,7 @@ public class OpenXCTestActivity extends Activity {
 		try {
 			fuel = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			temp = fuel.getValue().doubleValue();
-			
-			Log.i(TAG, "Temp is "+temp);
 		} catch (UnrecognizedMeasurementTypeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoValueException e) {
 			Log.w(TAG, "Failed to get fuel measurement");
@@ -392,7 +364,6 @@ public class OpenXCTestActivity extends Activity {
    			}
    		});
 	   	
-		
 	   	final double usage = gas;
    		mpg.post(new Runnable() {
 			public void run() {
@@ -404,57 +375,17 @@ public class OpenXCTestActivity extends Activity {
    		drawGraph((time-START_TIME), speedm, gas);
 	}
 	
-	private double calculateGasUsage(double gas, double speedm) { //FIXME is this right?!
-		double distance = speedm*POLL_FREQUENCY;
-		double usage = gas-lastUsageCount;
-		lastUsageCount = gas;
-		Log.i(TAG, "Distance is: "+distance+". Usage is: "+usage);
-		return distance/usage;
-	}
-	
 	private void pollManager() {
 		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
 		String choice = setting.getString("update_interval", "0");
-		Log.i(TAG, "Choice is: "+choice);
-		if (Integer.parseInt(choice) > 0) {
-			instantUpdate = false; //may not be needed FIXME
-			removeListeners();
-			POLL_FREQUENCY = Integer.parseInt(choice);
-			if (pollMeasurements == false) {
-				updateMeasurements();
-			}
-		}
-		else {
-			instantUpdate = true; // may not be needed. FIXME
-			try {
-				vehicleService.addListener(VehicleSpeed.class, speedListener);
-			} catch (RemoteVehicleServiceException e) {
-				e.printStackTrace();
-			} catch (UnrecognizedMeasurementTypeException e) {
-				e.printStackTrace();
-			}
-			pollMeasurements = false; // Disables polling (kills the for loop)
-		}
+		POLL_FREQUENCY = Integer.parseInt(choice);
 	}
 	
 	private void pollInit() {
 		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
 		setting.registerOnSharedPreferenceChangeListener(prefListener);
 		pollManager();
-	}
-	
-	private void pollStop() {
-		instantUpdate = false;
-		removeListeners();
-		pollMeasurements = false;
-	}
-	
-	private void removeListeners() {
-		try {
-			vehicleService.removeListener(VehicleSpeed.class, speedListener);
-		} catch (RemoteVehicleServiceException e) {
-			e.printStackTrace();
-		}
+		updateMeasurements();
 	}
 	
 	private double getTime() {
@@ -467,7 +398,6 @@ public class OpenXCTestActivity extends Activity {
 	private void makeToast(String say) {
 		Context context = getApplicationContext();
 		int duration = Toast.LENGTH_SHORT;
-		
 		Toast toast = Toast.makeText(context, say, duration);
 		toast.show();
 	}
