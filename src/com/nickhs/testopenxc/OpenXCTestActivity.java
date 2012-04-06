@@ -145,12 +145,10 @@ public class OpenXCTestActivity extends Activity {
 
         mSpeedChartView = ChartFactory.getTimeChartView(this, sDataset, mSpeedRenderer, null);
         mSpeedChartView.addPanListener(panListener);
-        mSpeedChartView.addZoomListener(zoomListener, false, true);
         topLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
         
         mGasChartView = ChartFactory.getTimeChartView(this, gDataset, mGasRenderer, null);
         mGasChartView.addPanListener(panListener);
-        mGasChartView.addZoomListener(zoomListener, false, true);
         botLayout.addView(mGasChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
     }
 
