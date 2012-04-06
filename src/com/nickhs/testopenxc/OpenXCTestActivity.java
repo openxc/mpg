@@ -56,11 +56,15 @@ import com.openxc.remote.RemoteVehicleServiceException;
 public class OpenXCTestActivity extends Activity {
 	VehicleService vehicleService;
 	DbHelper dbHelper;
+	
 	private boolean isBound = false;	
-	private long START_TIME = -1;
+	private boolean isRunning = false;
 	private boolean scrollGraph = true;
-	private int POLL_FREQUENCY = -1;
+	
 	private static int OPTIMAL_SPEED = 97;
+
+	private long START_TIME = -1;
+	private int POLL_FREQUENCY = -1;
 	private double lastUsageCount = 0;
 	
 	private XYMultipleSeriesRenderer mSpeedRenderer = new XYMultipleSeriesRenderer();
@@ -76,6 +80,7 @@ public class OpenXCTestActivity extends Activity {
 	private TextView mpg;
 	
 	private ToggleButton scroll;
+	private MenuItem mPauseButton;
     
 	/** Called when the activity is first created. */
     @Override
@@ -187,7 +192,6 @@ public class OpenXCTestActivity extends Activity {
 				break;
 			}
 		}
-		
 		return array;
 	}
 
@@ -195,6 +199,7 @@ public class OpenXCTestActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
     	MenuInflater inflater = getMenuInflater();
     	inflater.inflate(R.menu.menu, menu);
+    	mPauseButton = menu.findItem(R.id.pauseRecording);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -208,9 +213,12 @@ public class OpenXCTestActivity extends Activity {
 		case R.id.close:
 			System.exit(0);
 			break;
-		case R.id.manualSave:
-			manualSave();
+		case R.id.stopRecording:
+			stopRecording();
 			break;
+		case R.id.pauseRecording:
+			if (isRunning) POLL_FREQUENCY = -1;
+			else updateMeasurements();
 		case R.id.viewOverview:
 			startActivity(new Intent(this, MileageActivity.class));
 			break;
@@ -323,6 +331,7 @@ public class OpenXCTestActivity extends Activity {
    
 	private void updateMeasurements() {
 		if(isBound) {
+			isRunning = true;
 	   		new Thread(new Runnable () {
 					@Override
 					public void run() {
@@ -332,11 +341,16 @@ public class OpenXCTestActivity extends Activity {
 								Thread.sleep(POLL_FREQUENCY);
 							} catch (InterruptedException e) {
 								Log.e(TAG, "InterruptedException");
+							} catch (IllegalArgumentException e) {
+								Log.i(TAG, "Breaking out of measurement loop");
+								isRunning = false;
+								break;
 							}
 		        		}
 					}
 	   		}).start();
-	   	}
+		}
+		
 	   	else {
 	   		Log.e(TAG, "No Service Bound - this should not happen");
 	   	}
@@ -435,7 +449,7 @@ public class OpenXCTestActivity extends Activity {
 		toast.show();
 	}
 	
-	private void manualSave() {
+	private void stopRecording() {
 		FineOdometer oMeas;
 		try {
 			oMeas = (FineOdometer) vehicleService.get(FineOdometer.class);
@@ -443,12 +457,14 @@ public class OpenXCTestActivity extends Activity {
 			FuelConsumed fMeas = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			double fuelConsumed = fMeas.getValue().doubleValue();
 			double gasMileage = distanceTravelled/fuelConsumed;
-			Log.i(TAG, "Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed);
-			Log.i(TAG, "Last trip gas mileage was: "+gasMileage);
-		//	pollStop();
 			double endTime = getTime();
 			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, START_TIME, endTime);
+			
 			makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
+			startActivity(new Intent(this, OverviewActivity.class));
+			
+			POLL_FREQUENCY = -1;
+			
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {

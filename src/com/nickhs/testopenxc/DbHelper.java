@@ -36,7 +36,6 @@ public class DbHelper extends SQLiteOpenHelper {
 		Log.i(TAG, "onCreated");
 		String sql = "create table "+TABLE+" ("+C_ID+" integer primary key autoincrement, "+C_TIME+" timestamp default(current_timestamp), "+C_LENGTH+" int, "
 		+C_DISTANCE+" int, "+C_FUEL+" int, "+C_MILEAGE+" int)";
-		Log.e(TAG, sql);
 		db.execSQL(sql);
 	}
 
@@ -59,7 +58,6 @@ public class DbHelper extends SQLiteOpenHelper {
 		values.put(C_FUEL, fuel);
 		values.put(C_MILEAGE, mileage);
 		SQLiteDatabase db = getWritableDatabase();
-		Log.e(TAG, values.toString());
 		db.insertOrThrow(TABLE, null, values);
 		Log.i(TAG, "Insertion complete");
 	}
