@@ -50,7 +50,6 @@ import com.openxc.remote.sources.trace.TraceVehicleDataSource;
 /* TODO: Send the range into a sharedpreferences. Instantiate sharedprefs and make it global? Why are there so many
  * global variables? Jesus.
  * Actually implement the system life cycle
- * Actually implement a base application
  * Check on how many points before we die
  * Destroy zoom func?
  * Broadcast filter for ignition on
@@ -81,7 +80,8 @@ public class OpenXCTestActivity extends Activity {
 	private TextView mpg;
 	
 	private ToggleButton scroll;
-    /** Called when the activity is first created. */
+    
+	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,6 +111,24 @@ public class OpenXCTestActivity extends Activity {
         XYMultipleSeriesDataset gDataset = initGraph(mGasRenderer, gasSeries);
         XYMultipleSeriesDataset sDataset = initGraph(mSpeedRenderer, speedSeries);
         
+        if (savedInstanceState != null) {
+        	double[] speedX = savedInstanceState.getDoubleArray("speedX");
+        	double[] speedY = savedInstanceState.getDoubleArray("speedY");
+        	for (int i = 0; i < speedX.length; i++) {
+        		Log.i(TAG, "Adding speed: ("+speedX[i]+", "+speedY[i]+")");
+        		speedSeries.add(speedX[i], speedY[i]);
+        	}
+        	
+        	double[] gasX = savedInstanceState.getDoubleArray("gasX");
+        	double[] gasY = savedInstanceState.getDoubleArray("gasY");
+        	for (int i = 0; i < gasX.length; i++) {
+        		Log.i(TAG, "Adding gas: ("+gasX[i]+", "+gasY[i]+")");
+        		gasSeries.add(gasX[i], gasY[i]);
+        	}
+        	
+        	Log.i(TAG, "Recreated graph");
+        }
+
         mSpeedRenderer.setXTitle("Time (ms)");
         mSpeedRenderer.setYTitle("Speed (km/h)");
         
@@ -140,8 +158,48 @@ public class OpenXCTestActivity extends Activity {
                 
         START_TIME = getTime();
     }
-    
-    @Override
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+		Log.i(TAG, "onSaveInstanceState");
+		outState.putInt("count", speedSeries.getItemCount());
+		double[] speedX = convertToArray(speedSeries, "x");
+		double[] speedY = convertToArray(speedSeries, "y");
+		double[] gasX = convertToArray(gasSeries, "x");
+		double[] gasY = convertToArray(gasSeries, "y");
+		
+		outState.putDoubleArray("speedX", speedX);
+		outState.putDoubleArray("speedY", speedY);
+		outState.putDoubleArray("gasX", gasX);
+		outState.putDoubleArray("gasY", gasY);
+		outState.putDouble("time", START_TIME);
+	}
+
+	private double[] convertToArray(XYSeries series, String type) {
+		int count = series.getItemCount();
+		double[] array = new double[count];
+		for (int i=0; i < count; i++) {
+			if (type.equalsIgnoreCase("x")) {
+				array[i] = series.getX(i);
+			}
+			
+			else if (type.equalsIgnoreCase("y")) {
+				array[i] = series.getY(i);
+			}
+			
+			else {
+				Log.e(TAG, "Invalid call to convertToArray");
+				Log.e(TAG, "Type is invalid: "+type);
+				break;
+			}
+		}
+		
+		return array;
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
     	MenuInflater inflater = getMenuInflater();
     	inflater.inflate(R.menu.menu, menu);
