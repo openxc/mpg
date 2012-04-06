@@ -59,7 +59,7 @@ public class OpenXCTestActivity extends Activity {
 	VehicleService vehicleService;
 	DbHelper dbHelper;
 	private boolean isBound = false;	
-	private double START_TIME = -1;
+	private long START_TIME = -1;
 	private boolean instantUpdate = false;
 	private boolean scrollGraph = true;
 	private boolean pollMeasurements = false;
@@ -111,6 +111,8 @@ public class OpenXCTestActivity extends Activity {
         XYMultipleSeriesDataset gDataset = initGraph(mGasRenderer, gasSeries);
         XYMultipleSeriesDataset sDataset = initGraph(mSpeedRenderer, speedSeries);
         
+        START_TIME = getTime();
+        
         if (savedInstanceState != null) {
         	double[] speedX = savedInstanceState.getDoubleArray("speedX");
         	double[] speedY = savedInstanceState.getDoubleArray("speedY");
@@ -127,6 +129,8 @@ public class OpenXCTestActivity extends Activity {
         	}
         	
         	Log.i(TAG, "Recreated graph");
+        	
+        	START_TIME = savedInstanceState.getLong("time");
         }
 
         mSpeedRenderer.setXTitle("Time (ms)");
@@ -155,8 +159,6 @@ public class OpenXCTestActivity extends Activity {
         mGasChartView.addPanListener(panListener);
         mGasChartView.addZoomListener(zoomListener, false, true);
         botLayout.addView(mGasChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-                
-        START_TIME = getTime();
     }
 
 	@Override
@@ -174,7 +176,7 @@ public class OpenXCTestActivity extends Activity {
 		outState.putDoubleArray("speedY", speedY);
 		outState.putDoubleArray("gasX", gasX);
 		outState.putDoubleArray("gasY", gasY);
-		outState.putDouble("time", START_TIME);
+		outState.putLong("time", START_TIME);
 	}
 
 	private double[] convertToArray(XYSeries series, String type) {
@@ -515,10 +517,10 @@ public class OpenXCTestActivity extends Activity {
 		}
 	}
 	
-	private double getTime() {
+	private long getTime() {
 		Time curTime = new Time();
    		curTime.setToNow();
-   		double time = curTime.toMillis(false);
+   		long time = curTime.toMillis(false);
    		return time;
 	}
 	
