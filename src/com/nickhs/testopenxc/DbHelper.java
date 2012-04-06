@@ -49,7 +49,6 @@ public class DbHelper extends SQLiteOpenHelper {
 	
 	public void saveResults(double dist, double fuel, double mileage, double start, double end) {		
 		double length = ((end-start)/(1000*60));
-		Log.i(TAG, "Length is: "+length+". Mileage is: "+mileage);
 		
 		ContentValues values = new ContentValues();
 		values.put(C_DISTANCE, dist);
@@ -83,8 +82,6 @@ public class DbHelper extends SQLiteOpenHelper {
 	public Cursor getLastData(String startDate, String endDate, String col) {
 		SQLiteDatabase db = getReadableDatabase();
 		String[] colToFetch = {col};
-		Log.i(TAG, "SD is: "+startDate);
-		Log.i(TAG, "ED is: "+endDate);
 		Cursor c = db.query(TABLE, colToFetch, 
 				C_TIME+" BETWEEN '"+startDate+"' AND '"+endDate+"'",
 				null, null, null, null);

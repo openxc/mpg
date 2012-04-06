@@ -115,7 +115,6 @@ public class OverviewActivity extends Activity {
 	    renderer.setShowGrid(true);
 	    renderer.setYAxisMin(0);
 	    renderer.setYAxisMax(series.getMaxY()+(series.getMaxY()*.05));
-	    Log.i(TAG, "Minx is: "+series.getMinX());
 	    renderer.setXAxisMin(series.getMaxX()-4);
 	    renderer.setXAxisMax(series.getMaxX()+(series.getMaxX()*.05));
 	    renderer.setBarSpacing(0.05);
