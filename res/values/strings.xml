@@ -4,7 +4,7 @@
     <string name="hello">Hello World, OpenXCTestActivity!</string>
     <string name="app_name">MPG Viewer</string>
     <string name="lSpeed">Speed (km/h): </string>
-    <string name="tSpeed">undefinded</string>
+    <string name="tSpeed">undefined</string>
     <string name="lMPG">Usage (L):</string>
     <string name="tMPG">undefined</string>
     <string name="lScroll">Scrolling:</string>

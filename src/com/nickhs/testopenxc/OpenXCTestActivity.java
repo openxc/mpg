@@ -58,9 +58,7 @@ public class OpenXCTestActivity extends Activity {
 	DbHelper dbHelper;
 	private boolean isBound = false;	
 	private long START_TIME = -1;
-	private boolean instantUpdate = false;
 	private boolean scrollGraph = true;
-	private boolean pollMeasurements = false;
 	private int POLL_FREQUENCY = -1;
 	private static int OPTIMAL_SPEED = 97;
 	private double lastUsageCount = 0;
@@ -158,7 +156,6 @@ public class OpenXCTestActivity extends Activity {
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		// TODO Auto-generated method stub
 		super.onSaveInstanceState(outState);
 		Log.i(TAG, "onSaveInstanceState");
 		outState.putInt("count", speedSeries.getItemCount());
@@ -228,26 +225,6 @@ public class OpenXCTestActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
     
-	VehicleSpeed.Listener speedListener = new VehicleSpeed.Listener() {
-        public void receive(VehicleMeasurement measurement) {
-            if (instantUpdate) {
-            	final VehicleSpeed meas = (VehicleSpeed) measurement;
-            	final String measure = Double.toString(meas.getValue().doubleValue());
-                speed.post(new Runnable() {
-    				@Override
-    				public void run() {
-    		            speed.setText(measure);
-    				}
-    			});
-                double time = getTime();
-             //   drawGraph((time-START_TIME), Double.parseDouble(measure), -1); //because I'm an idiot
-            }
-            else {
-            	Log.w(TAG, "This should not run, you have a bug");
-            }
-        }
-    };
-    
     public ServiceConnection mConnection = new ServiceConnection() {
 		
 		@Override
@@ -262,13 +239,7 @@ public class OpenXCTestActivity extends Activity {
 			VehicleServiceBinder binder = (VehicleServiceBinder) service;
 			vehicleService = binder.getService();
 			Log.i(TAG, "Remote Vehicle Service bound");
-			/* try {
-				vehicleService.setDataSource(TraceVehicleDataSource.class.getName(), "resource://"+R.raw.driving2);
-				makeToast("Using trace file");
-			} catch (RemoteVehicleServiceException e) {
-				Log.e(TAG, "RemoteVehicleException occurred");
-				Log.e(TAG, e.getMessage());
-			}
+
 		/*	try { // FIXME renable listener when ready
 				vehicleService.addListener(IgnitionStatus.class, ignitionListener);
 			} catch (RemoteVehicleServiceException e) {
@@ -276,6 +247,7 @@ public class OpenXCTestActivity extends Activity {
 			} catch (UnrecognizedMeasurementTypeException e) {
 				e.printStackTrace();
 			} */
+			
 			isBound = true;
 			pollInit();
 		}
@@ -299,18 +271,6 @@ public class OpenXCTestActivity extends Activity {
 		}
 	};
 	
-	ZoomListener zoomListener = new ZoomListener() {
-		@Override
-		public void zoomReset() {
-			Log.i(TAG, "Zoom Reset");
-		}
-		
-		@Override
-		public void zoomApplied(ZoomEvent e) {
-			Log.i(TAG, "Zoom Applied: "+e.getZoomRate());
-		}
-	};
-	
 	IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
 		@Override
 		public void receive(VehicleMeasurement arg0) {
@@ -330,7 +290,6 @@ public class OpenXCTestActivity extends Activity {
 					Log.i(TAG, "Last trip gas mileage was: "+gasMileage);
 					vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
 				//	makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
-					pollStop();
 					double endTime = getTime();
 					dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, START_TIME, endTime);
 					Intent intent = new Intent(getApplicationContext(), MileageActivity.class);
@@ -365,12 +324,11 @@ public class OpenXCTestActivity extends Activity {
 	}
    
 	private void updateMeasurements() {
-		pollMeasurements = true;
 		if(isBound) {
 	   		new Thread(new Runnable () {
 					@Override
 					public void run() {
-		        		while(pollMeasurements) {
+		        		while(true) {
 		        			getMeasurements();
 		        			try {
 								Thread.sleep(POLL_FREQUENCY);
@@ -407,7 +365,6 @@ public class OpenXCTestActivity extends Activity {
 			fuel = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			temp = fuel.getValue().doubleValue();
 		} catch (UnrecognizedMeasurementTypeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoValueException e) {
 			Log.w(TAG, "Failed to get fuel measurement");
@@ -423,11 +380,8 @@ public class OpenXCTestActivity extends Activity {
 	}
 	
 	private void getMeasurements() {
-		double speedm = -1;
-		double gas = -1;
-		
-		speedm = getSpeed();
-		gas = getGasConsumed();
+		double speedm = getSpeed();
+		double gas = getGasConsumed();
    		
 		final String temp = Double.toString(speedm);
 		speed.post(new Runnable() {
@@ -435,7 +389,6 @@ public class OpenXCTestActivity extends Activity {
         		speed.setText(temp);
    			}
    		});
-	   	
 		
 	   	final double usage = gas;
    		mpg.post(new Runnable() {
@@ -459,45 +412,14 @@ public class OpenXCTestActivity extends Activity {
 	private void pollManager() {
 		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
 		String choice = setting.getString("update_interval", "0");
-		if (Integer.parseInt(choice) > 0) {
-			instantUpdate = false; //may not be needed FIXME
-			removeListeners();
-			POLL_FREQUENCY = Integer.parseInt(choice);
-			if (pollMeasurements == false) {
-				updateMeasurements();
-			}
-		}
-		else {
-			instantUpdate = true; // may not be needed. FIXME
-			try {
-				vehicleService.addListener(VehicleSpeed.class, speedListener);
-			} catch (RemoteVehicleServiceException e) {
-				e.printStackTrace();
-			} catch (UnrecognizedMeasurementTypeException e) {
-				e.printStackTrace();
-			}
-			pollMeasurements = false; // Disables polling (kills the for loop)
-		}
+		POLL_FREQUENCY = Integer.parseInt(choice);
 	}
 	
 	private void pollInit() {
 		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
 		setting.registerOnSharedPreferenceChangeListener(prefListener);
 		pollManager();
-	}
-	
-	private void pollStop() {
-		instantUpdate = false;
-		removeListeners();
-		pollMeasurements = false;
-	}
-	
-	private void removeListeners() {
-		try {
-			vehicleService.removeListener(VehicleSpeed.class, speedListener);
-		} catch (RemoteVehicleServiceException e) {
-			e.printStackTrace();
-		}
+		updateMeasurements();
 	}
 	
 	private long getTime() {
