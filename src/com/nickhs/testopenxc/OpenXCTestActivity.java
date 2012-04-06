@@ -45,11 +45,9 @@ import com.openxc.measurements.VehicleMeasurement;
 import com.openxc.measurements.VehicleSpeed;
 import com.openxc.remote.NoValueException;
 import com.openxc.remote.RemoteVehicleServiceException;
-import com.openxc.remote.sources.trace.TraceVehicleDataSource;
 
 /* TODO: Send the range into a sharedpreferences. Instantiate sharedprefs and make it global? Why are there so many
  * global variables? Jesus.
- * Actually implement the system life cycle
  * Check on how many points before we die
  * Destroy zoom func?
  * Broadcast filter for ignition on
@@ -99,7 +97,6 @@ public class OpenXCTestActivity extends Activity {
 				scroll.setChecked(scrollGraph);
 				mSpeedRenderer.setYAxisMin(0);
 				mGasRenderer.setYAxisMin(0);
-				Log.i(TAG, "Scroll Lock clicked");
 			}
 		});
         
@@ -117,14 +114,12 @@ public class OpenXCTestActivity extends Activity {
         	double[] speedX = savedInstanceState.getDoubleArray("speedX");
         	double[] speedY = savedInstanceState.getDoubleArray("speedY");
         	for (int i = 0; i < speedX.length; i++) {
-        		Log.i(TAG, "Adding speed: ("+speedX[i]+", "+speedY[i]+")");
         		speedSeries.add(speedX[i], speedY[i]);
         	}
         	
         	double[] gasX = savedInstanceState.getDoubleArray("gasX");
         	double[] gasY = savedInstanceState.getDoubleArray("gasY");
         	for (int i = 0; i < gasX.length; i++) {
-        		Log.i(TAG, "Adding gas: ("+gasX[i]+", "+gasY[i]+")");
         		gasSeries.add(gasX[i], gasY[i]);
         	}
         	
@@ -222,11 +217,9 @@ public class OpenXCTestActivity extends Activity {
 			manualSave();
 			break;
 		case R.id.viewOverview:
-			Log.e(TAG, "viewing overview!");
 			startActivity(new Intent(this, MileageActivity.class));
 			break;
 		case R.id.createData:
-			Log.i(TAG, "running create test data");
 			dbHelper.createTestData(100);
 			break;
 		case R.id.viewGraphs:
@@ -354,13 +347,8 @@ public class OpenXCTestActivity extends Activity {
 	};
 	
 	private void drawGraph(double time, double speed, double gas) {
-		 Log.i(TAG, "Time is: "+time+". Speed is: "+speed+". Gas is: "+gas);
          speedSeries.add(time, speed);
          gasSeries.add(time, gas);
-         Log.i(TAG, "MaxX Gas is: "+gasSeries.getMaxX());
-         Log.i(TAG, "MaxX Speed is: "+gasSeries.getMaxX());
-         Log.i(TAG, "MinX: "+gasSeries.getMinX());
-         Log.i(TAG, "Scale: "+gasSeries.getScaleNumber());
          if (scrollGraph) {
        	  if (time > 50000) { // FIXME should be a preference
            	  double max = speedSeries.getMaxX();
@@ -385,7 +373,6 @@ public class OpenXCTestActivity extends Activity {
 		        		while(pollMeasurements) {
 		        			getMeasurements();
 		        			try {
-		        				Log.i(TAG, "Sleeping for "+POLL_FREQUENCY);
 								Thread.sleep(POLL_FREQUENCY);
 							} catch (InterruptedException e) {
 								Log.e(TAG, "InterruptedException");
@@ -395,7 +382,7 @@ public class OpenXCTestActivity extends Activity {
 	   		}).start();
 	   	}
 	   	else {
-	   		Log.e(TAG, "We're going down!");
+	   		Log.e(TAG, "No Service Bound - this should not happen");
 	   	}
 	}
 	
@@ -406,7 +393,6 @@ public class OpenXCTestActivity extends Activity {
 			speed = (VehicleSpeed) vehicleService.get(VehicleSpeed.class);
 			temp = speed.getValue().doubleValue();
 		} catch (UnrecognizedMeasurementTypeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoValueException e) {
 			Log.w(TAG, "Failed to get speed measurement");
@@ -420,8 +406,6 @@ public class OpenXCTestActivity extends Activity {
 		try {
 			fuel = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			temp = fuel.getValue().doubleValue();
-			
-			Log.i(TAG, "Temp is "+temp);
 		} catch (UnrecognizedMeasurementTypeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -475,7 +459,6 @@ public class OpenXCTestActivity extends Activity {
 	private void pollManager() {
 		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
 		String choice = setting.getString("update_interval", "0");
-		Log.i(TAG, "Choice is: "+choice);
 		if (Integer.parseInt(choice) > 0) {
 			instantUpdate = false; //may not be needed FIXME
 			removeListeners();
