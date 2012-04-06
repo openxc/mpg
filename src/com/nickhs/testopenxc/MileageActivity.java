@@ -122,7 +122,6 @@ public class MileageActivity extends Activity {
 		
 		TextView dataLength = (TextView) d.findViewById(R.id.dataLength);
 		int temp = (int) Double.parseDouble(data[2]);
-		Log.i(TAG, "temp is "+temp);
 		if (temp <= 1) {
 			dataLength.setText("less than a minute");
 		}
@@ -171,11 +170,9 @@ public class MileageActivity extends Activity {
 		Cursor c = db.query(DbHelper.TABLE, columns, null, null, null, null, null);
 		c.moveToFirst();
 		for (int x=0; x < c.getCount(); x++) {
-			Log.i(TAG, "Inside loop");
 			double miles = c.getDouble(c.getColumnIndex(DbHelper.C_MILEAGE));
 			String stime = c.getString(c.getColumnIndex(DbHelper.C_TIME));
 			int pkey = c.getInt(c.getColumnIndex(DbHelper.C_ID));
-			Log.i(TAG, "Miles is: "+miles+" Time is: "+stime+" PKey is: "+pkey);
 			
 			idLookup.put(x, pkey);
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -194,17 +191,14 @@ public class MileageActivity extends Activity {
 	}
 	
 	private String[] getData(int index) {
-		Log.i(TAG, "Index to find is: "+index);
 		String returnArray[] = new String[6];
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		int tsearch = idLookup.get(index);
 		String search = Integer.toString(tsearch);
 		Cursor c = db.query(DbHelper.TABLE, null, DbHelper.C_ID+" = "+search, null, null, null, null);
-		Log.i(TAG, "data returned is: "+c.getCount());
 		c.moveToFirst();
 		for(int x=0; x < c.getColumnCount(); x++) {
 			returnArray[x] = c.getString(x);
-			Log.i(TAG, x+ " is : "+returnArray[x]);
 		}
 		c.close();
 		db.close();
