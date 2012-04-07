@@ -45,6 +45,7 @@ import com.openxc.measurements.VehicleMeasurement;
 import com.openxc.measurements.VehicleSpeed;
 import com.openxc.remote.NoValueException;
 import com.openxc.remote.RemoteVehicleServiceException;
+import com.openxc.remote.sources.trace.TraceVehicleDataSource;
 
 /* TODO: Send the range into a sharedpreferences. Instantiate sharedprefs and make it global? Why are there so many
  * global variables? Jesus.
@@ -250,6 +251,11 @@ public class OpenXCTestActivity extends Activity {
 			VehicleServiceBinder binder = (VehicleServiceBinder) service;
 			vehicleService = binder.getService();
 			Log.i(TAG, "Remote Vehicle Service bound");
+			
+			SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+			if (prefs.getBoolean("use_trace_file", false)) {
+				vehicleService.setDataSource(TraceVehicleDataSource.class.getName(), resource)
+			}
 
 		/*	try { // FIXME renable listener when ready
 				vehicleService.addListener(IgnitionStatus.class, ignitionListener);
@@ -269,7 +275,14 @@ public class OpenXCTestActivity extends Activity {
 		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 				String key) {
 			Log.i(TAG, "Preference changed: "+key);
-			pollManager();
+			
+			if (key.equalsIgnoreCase("use_trace_file")) {
+				startActivity(new Intent(getApplicationContext(), OpenXCTestActivity.class));
+			}
+			
+			else {
+				pollManager();
+			}
 		}
 	};
 	
@@ -389,7 +402,7 @@ public class OpenXCTestActivity extends Activity {
 		
 		double diff = temp - lastUsageCount;
 		lastUsageCount = temp;
-		if (diff > 1) { // catch bogus values
+		if (diff > 1) { // catch bogus values FIXME
 			diff = 0;
 		}
 		
@@ -420,7 +433,7 @@ public class OpenXCTestActivity extends Activity {
 	
 	private void pollManager() {
 		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
-		String choice = setting.getString("update_interval", "0");
+		String choice = setting.getString("update_interval", "1000");
 		POLL_FREQUENCY = Integer.parseInt(choice);
 		if (!isRunning) updateMeasurements();
 	}
