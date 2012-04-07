@@ -80,7 +80,6 @@ public class OpenXCTestActivity extends Activity {
 	private TextView mpg;
 	
 	private ToggleButton scroll;
-	private MenuItem mPauseButton;
     
 	/** Called when the activity is first created. */
     @Override
@@ -199,7 +198,6 @@ public class OpenXCTestActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
     	MenuInflater inflater = getMenuInflater();
     	inflater.inflate(R.menu.menu, menu);
-    	mPauseButton = menu.findItem(R.id.pauseRecording);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -217,13 +215,20 @@ public class OpenXCTestActivity extends Activity {
 			stopRecording();
 			break;
 		case R.id.pauseRecording:
-			if (isRunning) POLL_FREQUENCY = -1;
-			else updateMeasurements();
+			if (isRunning) {
+				POLL_FREQUENCY = -1;
+				item.setIcon(android.R.drawable.ic_media_play);
+			}
+			else {
+				pollManager();
+				item.setIcon(android.R.drawable.ic_media_pause);
+			}
+			break;
 		case R.id.viewOverview:
 			startActivity(new Intent(this, MileageActivity.class));
 			break;
 		case R.id.createData:
-			dbHelper.createTestData(100);
+			dbHelper.createTestData(1);
 			break;
 		case R.id.viewGraphs:
 			startActivity(new Intent(this, OverviewActivity.class));
@@ -413,25 +418,17 @@ public class OpenXCTestActivity extends Activity {
    		drawGraph((time-START_TIME), speedm, gas);
 	}
 	
-	private double calculateGasUsage(double gas, double speedm) { //FIXME is this right?!
-		double distance = speedm*POLL_FREQUENCY;
-		double usage = gas-lastUsageCount;
-		lastUsageCount = gas;
-		Log.i(TAG, "Distance is: "+distance+". Usage is: "+usage);
-		return distance/usage;
-	}
-	
 	private void pollManager() {
 		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
 		String choice = setting.getString("update_interval", "0");
 		POLL_FREQUENCY = Integer.parseInt(choice);
+		if (!isRunning) updateMeasurements();
 	}
 	
 	private void pollInit() {
 		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
 		setting.registerOnSharedPreferenceChangeListener(prefListener);
 		pollManager();
-		updateMeasurements();
 	}
 	
 	private long getTime() {
