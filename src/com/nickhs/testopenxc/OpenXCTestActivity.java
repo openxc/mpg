@@ -101,6 +101,7 @@ public class OpenXCTestActivity extends Activity {
 		});
         
 		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		sharedPrefs.registerOnSharedPreferenceChangeListener(prefListener);
         
         Intent intent = new Intent(this, VehicleService.class);
        	bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -287,7 +288,7 @@ public class OpenXCTestActivity extends Activity {
 			} */
 			
 			isBound = true;
-			pollInit();
+			pollManager();
 		}
 	};
 	
@@ -435,12 +436,6 @@ public class OpenXCTestActivity extends Activity {
 		String choice = sharedPrefs.getString("update_interval", "1000");
 		POLL_FREQUENCY = Integer.parseInt(choice);
 		if (!isRunning) updateMeasurements();
-	}
-	
-	private void pollInit() {
-		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
-		setting.registerOnSharedPreferenceChangeListener(prefListener);
-		pollManager();
 	}
 	
 	private long getTime() {
