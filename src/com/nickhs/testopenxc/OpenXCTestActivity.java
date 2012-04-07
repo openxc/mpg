@@ -7,8 +7,6 @@ import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 import org.achartengine.tools.PanListener;
-import org.achartengine.tools.ZoomEvent;
-import org.achartengine.tools.ZoomListener;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -46,11 +44,10 @@ import com.openxc.measurements.VehicleSpeed;
 import com.openxc.remote.NoValueException;
 import com.openxc.remote.RemoteVehicleServiceException;
 import com.openxc.remote.sources.trace.TraceVehicleDataSource;
+import com.openxc.remote.sources.usb.UsbVehicleDataSource;
 
-/* TODO: Send the range into a sharedpreferences. Instantiate sharedprefs and make it global? Why are there so many
- * global variables? Jesus.
+/* TODO: Send the range into a sharedpreferences.
  * Check on how many points before we die
- * Destroy zoom func?
  * Broadcast filter for ignition on
  */
 
@@ -79,8 +76,8 @@ public class OpenXCTestActivity extends Activity {
 	
 	private TextView speed;
 	private TextView mpg;
-	
 	private ToggleButton scroll;
+	private SharedPreferences sharedPrefs;
     
 	/** Called when the activity is first created. */
     @Override
@@ -102,6 +99,8 @@ public class OpenXCTestActivity extends Activity {
 				mGasRenderer.setYAxisMin(0);
 			}
 		});
+        
+		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         
         Intent intent = new Intent(this, VehicleService.class);
        	bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -194,6 +193,13 @@ public class OpenXCTestActivity extends Activity {
 		}
 		return array;
 	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		Log.i(TAG, "onDestroy called");
+		POLL_FREQUENCY = -1;
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -252,9 +258,24 @@ public class OpenXCTestActivity extends Activity {
 			vehicleService = binder.getService();
 			Log.i(TAG, "Remote Vehicle Service bound");
 			
-			SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
-			if (prefs.getBoolean("use_trace_file", false)) {
-				vehicleService.setDataSource(TraceVehicleDataSource.class.getName(), resource)
+			Log.i(TAG, "Trace file is: "+sharedPrefs.getBoolean("use_trace_file", true));
+			if (sharedPrefs.getBoolean("use_trace_file", false)) {
+				Log.i(TAG, "Using trace file");
+				try {
+					vehicleService.setDataSource(TraceVehicleDataSource.class.getName(), "file:///sdcard/drivingnew");
+				} catch (RemoteVehicleServiceException e) {
+					Log.e(TAG, e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			
+			else {
+				try {
+					vehicleService.setDataSource(UsbVehicleDataSource.class.getName(), null);
+				} catch (RemoteVehicleServiceException e) {
+					Log.e(TAG, e.getMessage());
+					e.printStackTrace();
+				}
 			}
 
 		/*	try { // FIXME renable listener when ready
@@ -277,6 +298,8 @@ public class OpenXCTestActivity extends Activity {
 			Log.i(TAG, "Preference changed: "+key);
 			
 			if (key.equalsIgnoreCase("use_trace_file")) {
+				Log.i(TAG, "finishing");
+				finish();
 				startActivity(new Intent(getApplicationContext(), OpenXCTestActivity.class));
 			}
 			
@@ -289,7 +312,6 @@ public class OpenXCTestActivity extends Activity {
 	PanListener panListener = new PanListener() {
 		@Override
 		public void panApplied() {
-			Log.i(TAG, "Person is panning");
 			scrollGraph = false;
 			scroll.setChecked(false);
 		}
@@ -300,31 +322,9 @@ public class OpenXCTestActivity extends Activity {
 		public void receive(VehicleMeasurement arg0) {
 			IgnitionPosition ignitionPosition = 
                     ((IgnitionStatus) arg0).getValue().enumValue();
-			Log.d(TAG, "Ignition Status is: " + ignitionPosition);
 			if (ignitionPosition == IgnitionPosition.OFF) {
-                Log.i(TAG, "Ignition is " + ignitionPosition + 
-                        " -- recording a data point");
-				try {
-					FineOdometer oMeas = (FineOdometer) vehicleService.get(FineOdometer.class);
-					double distanceTravelled = oMeas.getValue().doubleValue();
-					FuelConsumed fMeas = (FuelConsumed) vehicleService.get(FuelConsumed.class);
-					double fuelConsumed = fMeas.getValue().doubleValue();
-					double gasMileage = distanceTravelled/fuelConsumed;
-					Log.i(TAG, "Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed);
-					Log.i(TAG, "Last trip gas mileage was: "+gasMileage);
-					vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
-				//	makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
-					double endTime = getTime();
-					dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, START_TIME, endTime);
-					Intent intent = new Intent(getApplicationContext(), MileageActivity.class);
-					startActivity(intent);
-				} catch (UnrecognizedMeasurementTypeException e) {
-					e.printStackTrace();
-				} catch (NoValueException e) {
-					e.printStackTrace();
-				} catch (RemoteVehicleServiceException e) {
-					e.printStackTrace();
-				}
+                Log.i(TAG, "Ignition is off. Halting recording");
+					stopRecording();
 			}
 		}
 	};
@@ -373,7 +373,7 @@ public class OpenXCTestActivity extends Activity {
 	   		Log.e(TAG, "No Service Bound - this should not happen");
 	   	}
 	}
-	
+
 	private double getSpeed() {
 		VehicleSpeed speed;
 		double temp = -1;
@@ -432,8 +432,7 @@ public class OpenXCTestActivity extends Activity {
 	}
 	
 	private void pollManager() {
-		SharedPreferences setting = PreferenceManager.getDefaultSharedPreferences(this);
-		String choice = setting.getString("update_interval", "1000");
+		String choice = sharedPrefs.getString("update_interval", "1000");
 		POLL_FREQUENCY = Integer.parseInt(choice);
 		if (!isRunning) updateMeasurements();
 	}
@@ -472,7 +471,6 @@ public class OpenXCTestActivity extends Activity {
 			
 			makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
 			startActivity(new Intent(this, OverviewActivity.class));
-			
 			POLL_FREQUENCY = -1;
 			
 		} catch (UnrecognizedMeasurementTypeException e) {
