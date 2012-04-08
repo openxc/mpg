@@ -15,12 +15,14 @@ import org.achartengine.renderer.XYSeriesRenderer;
 import org.joda.time.DateMidnight;
 
 import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class OverviewActivity extends Activity {
 	final static String TAG = "OverviewActivity";
@@ -51,7 +53,7 @@ public class OverviewActivity extends Activity {
 		lastMileage = (TextView) findViewById(R.id.lastTrip);
 		previousMileage = (TextView) findViewById(R.id.previousTrip);
 		
-		prevMileage = savedInstanceState.getDouble("mileage", -1);
+		prevMileage = savedInstanceState.getDouble("mileage", -1); // FIXME needed?
 		
 		Kiip.init(this, KP_APP_KEY, KP_APP_SECRET);
 		
@@ -65,6 +67,32 @@ public class OverviewActivity extends Activity {
 	protected void onStart() {
 		super.onStart();
 		Kiip.getInstance().startSession(this, null);
+		
+		Cursor c = dbHelper.getLastData(2, DbHelper.C_MILEAGE);
+		c.moveToFirst();
+		double latestMileage = c.getDouble(0);
+		c.moveToNext();
+		double prevMileage = c.getDouble(0);
+		double prevAverage = getLastAverage(DbHelper.C_MILEAGE);
+		
+		Log.i(TAG, "Latest Mileage is: "+latestMileage+". "+
+				"Previous Mileage was: "+prevMileage+". "+
+				"Average Mileage was: "+prevAverage+". ");
+		
+		if (latestMileage > prevAverage) {
+			makeToast("Congratulations, you beat your average mileage!");
+			Kiip.getInstance().unlockAchievement("2", null, (String[]) null);
+		}
+		
+		else if (latestMileage > prevMileage) {
+			makeToast("Congratulations, you beat your last trip's mileage!");
+			Kiip.getInstance().unlockAchievement("5", null, (String[]) null);
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
 	}
 
 	@Override
@@ -151,23 +179,35 @@ public class OverviewActivity extends Activity {
 	
 	private TimeSeries getSeries(String column, String dataName, boolean average) {
 		TimeSeries series = new TimeSeries(dataName);
+	    int weeks = 12; // FIXME load from settings
+	    
 	    DateMidnight endDate = new DateMidnight();
 	    endDate = endDate.minusDays(endDate.getDayOfWeek());
 	    DateMidnight startDate = endDate.minusDays(7);
-	    int weeks = 12; // FIXME load from settings
 	        	
 		for (int i=0; i < weeks; i++) {
-		    double total = 0;
+		    double calc = 0;
     		Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
-		    total = calculateData(data, average);
+		    calc = calculateData(data, average);
     		
-		    series.add(startDate.getWeekOfWeekyear(), total);
+		    series.add(startDate.getWeekOfWeekyear(), calc);
 		    
 		    endDate = endDate.minusWeeks(1);
 		    startDate = startDate.minusWeeks(1);
 		}
 		
 		return series;
+	}
+	
+	private double getLastAverage(String column) {
+		DateMidnight endDate = new DateMidnight();
+	    endDate = endDate.minusDays(endDate.getDayOfWeek());
+	    DateMidnight startDate = endDate.minusDays(7);
+	    
+	    Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+	    double calc = calculateData(data, true);
+	    
+	    return calc;
 	}
 	
 	private double calculateData(Cursor data, boolean average) {
@@ -193,5 +233,13 @@ public class OverviewActivity extends Activity {
 	    
 	    data.close();
 	    return total;
+	}
+	
+	private void makeToast(String say) {
+		Context context = getApplicationContext();
+		int duration = Toast.LENGTH_SHORT;
+		
+		Toast toast = Toast.makeText(context, say, duration);
+		toast.show();
 	}
 }
