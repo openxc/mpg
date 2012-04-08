@@ -84,7 +84,6 @@ public class MileageActivity extends Activity {
 			}
 		});
         
-        
         mRenderer.setXTitle("Date Trip Started");
         mRenderer.setYTitle("Gas Mileage");		
         LinearLayout layout = (LinearLayout) findViewById(R.id.chartM);

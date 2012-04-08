@@ -467,7 +467,7 @@ public class OpenXCTestActivity extends Activity {
 			makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
 			
 			Intent intent = new Intent(this, OverviewActivity.class);
-			intent.putExtra("mileage", gasMileage);
+			intent.putExtra("giveReward", true);
 			startActivity(intent);
 			
 			POLL_FREQUENCY = -1;
