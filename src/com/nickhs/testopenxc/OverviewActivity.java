@@ -2,6 +2,8 @@ package com.nickhs.testopenxc;
 
 import java.text.DecimalFormat;
 
+import me.kiip.api.Kiip;
+
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
 import org.achartengine.chart.BarChart.Type;
@@ -23,6 +25,12 @@ import android.widget.TextView;
 public class OverviewActivity extends Activity {
 	final static String TAG = "OverviewActivity";
 	final static String pattern = "YYYY-MM-dd";
+	
+	private final String KP_APP_KEY =    "46549407b87447d7d9126070dc8abb72";
+	private final String KP_APP_SECRET = "5ea6c51ccee47f7939c43ca6d1edfb2a";
+	
+	private double prevMileage = -2;
+
 	DbHelper dbHelper;
 
 	TextView todayGas;
@@ -43,12 +51,28 @@ public class OverviewActivity extends Activity {
 		lastMileage = (TextView) findViewById(R.id.lastTrip);
 		previousMileage = (TextView) findViewById(R.id.previousTrip);
 		
+		prevMileage = savedInstanceState.getDouble("mileage", -1);
+		
+		Kiip.init(this, KP_APP_KEY, KP_APP_SECRET);
+		
 		drawTopLeft();
 		drawBotomLeft();
 		drawTopRight();
 		drawBottomRight();
 	}
 	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		Kiip.getInstance().startSession(this, null);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		Kiip.getInstance().endSession(this, null);
+	}
+
 	private void drawTopLeft() {
 	    GraphicalView chartPetrol = getChart(DbHelper.C_FUEL, "Gas Used", "litres", false);
 	    FrameLayout layout = (FrameLayout) findViewById(R.id.topLeft);

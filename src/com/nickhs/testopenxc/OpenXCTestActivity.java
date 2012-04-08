@@ -465,7 +465,11 @@ public class OpenXCTestActivity extends Activity {
 			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, START_TIME, endTime);
 			
 			makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
-			startActivity(new Intent(this, OverviewActivity.class));
+			
+			Intent intent = new Intent(this, OverviewActivity.class);
+			intent.putExtra("mileage", gasMileage);
+			startActivity(intent);
+			
 			POLL_FREQUENCY = -1;
 			
 		} catch (UnrecognizedMeasurementTypeException e) {
