@@ -4,14 +4,14 @@
     <string name="hello">Hello World, OpenXCTestActivity!</string>
     <string name="app_name">MPG Viewer</string>
     <string name="lSpeed">Speed (km/h): </string>
-    <string name="tSpeed">undefinded</string>
+    <string name="tSpeed">undefined</string>
     <string name="lMPG">Usage (L):</string>
     <string name="tMPG">undefined</string>
     <string name="lScroll">Scrolling:</string>
     <string name="tButton">On</string>
     <string name="settingsTitle">Settings</string>
     <string name="exitTitle">Close</string>
-    <string name="saveTitle">Manual Save</string>
+    <string name="saveTitle">Stop Recording</string>
     <string name="mileTitle">View Overview</string>
     <string name="labelTime">Date of Trip: </string>
     <string name="labelDistance">Distance Traveled: </string>
@@ -30,5 +30,6 @@
     <string name="lPreviousTrip">Previous Trip: </string>
     <string name="lUnitsTrip">km/l</string>
     <string name="lTitle2">Last Trip Gas Mileage</string>
+    <string name="pauseTitle">Pause Recording</string>
 
 </resources>

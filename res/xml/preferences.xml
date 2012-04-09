@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    <PreferenceCategory 
-        android:title="Something"
-        android:summary="Something else">
 	    
 	    <ListPreference 
 	        android:key="update_interval"
@@ -12,6 +9,11 @@
 	        android:entries="@array/updateInterval"
 	        android:entryValues="@array/updateIntervalValues"
 	  	/>
-	</PreferenceCategory>
+	    
+	    <CheckBoxPreference 
+	        android:key="use_trace_file"
+	        android:title="Use Trace File" 
+	        android:summary="Do you want to use a trace file?"
+	    />
 
 </PreferenceScreen>

@@ -36,7 +36,6 @@ public class DbHelper extends SQLiteOpenHelper {
 		Log.i(TAG, "onCreated");
 		String sql = "create table "+TABLE+" ("+C_ID+" integer primary key autoincrement, "+C_TIME+" timestamp default(current_timestamp), "+C_LENGTH+" int, "
 		+C_DISTANCE+" int, "+C_FUEL+" int, "+C_MILEAGE+" int)";
-		Log.e(TAG, sql);
 		db.execSQL(sql);
 	}
 
@@ -49,7 +48,6 @@ public class DbHelper extends SQLiteOpenHelper {
 	
 	public void saveResults(double dist, double fuel, double mileage, double start, double end) {		
 		double length = ((end-start)/(1000*60));
-		Log.i(TAG, "Length is: "+length+". Mileage is: "+mileage);
 		
 		ContentValues values = new ContentValues();
 		values.put(C_DISTANCE, dist);
@@ -60,7 +58,6 @@ public class DbHelper extends SQLiteOpenHelper {
 		values.put(C_FUEL, fuel);
 		values.put(C_MILEAGE, mileage);
 		SQLiteDatabase db = getWritableDatabase();
-		Log.e(TAG, values.toString());
 		db.insertOrThrow(TABLE, null, values);
 		Log.i(TAG, "Insertion complete");
 	}
@@ -83,8 +80,6 @@ public class DbHelper extends SQLiteOpenHelper {
 	public Cursor getLastData(String startDate, String endDate, String col) {
 		SQLiteDatabase db = getReadableDatabase();
 		String[] colToFetch = {col};
-		Log.i(TAG, "SD is: "+startDate);
-		Log.i(TAG, "ED is: "+endDate);
 		Cursor c = db.query(TABLE, colToFetch, 
 				C_TIME+" BETWEEN '"+startDate+"' AND '"+endDate+"'",
 				null, null, null, null);

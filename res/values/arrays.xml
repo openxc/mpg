@@ -2,7 +2,6 @@
 <resources>
 
     <string-array name="updateInterval">
-        <item name="instant">Instantly</item>
         <item name="1000">Every 1 second</item>
         <item name="2000">Every 2 seconds</item>
         <item name="3000">Every 3 seconds</item>
@@ -11,7 +10,6 @@
     </string-array>
     
     <string-array name="updateIntervalValues">
-        <item name="instant">0</item>
         <item name="1000">1000</item>
         <item name="2000">2000</item>
         <item name="3000">3000</item>

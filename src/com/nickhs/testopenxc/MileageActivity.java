@@ -39,10 +39,10 @@ public class MileageActivity extends Activity {
 
 	private static final String TAG = "MileageActivity";
 	private DbHelper dbHelper;
-	
+
 	private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer();
 	private GraphicalView chart;
-	
+
 	final static int INFO_DIALOG = 1;
 
 	@Override
@@ -50,29 +50,29 @@ public class MileageActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.mileage);
 		dbHelper = new DbHelper(this);
-		
+
 		mRenderer.setApplyBackgroundColor(true);
-        mRenderer.setBackgroundColor(Color.argb(100, 50, 50, 50));
-        mRenderer.setAxisTitleTextSize(16);
-        mRenderer.setChartTitleTextSize(20);
-        mRenderer.setLabelsTextSize(15);
-        mRenderer.setShowLegend(false);
-        mRenderer.setShowGrid(true);
-        
-    	TimeSeries data = new TimeSeries("Data");
-        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-        TimeSeries temp = populateSeries(data);
-        dataset.addSeries(temp);
-        
-        XYSeriesRenderer rend = new XYSeriesRenderer();
-        rend.setPointStyle(PointStyle.SQUARE);
-        rend.setFillPoints(true);
-        rend.setLineWidth(Float.MIN_NORMAL);
-        mRenderer.addSeriesRenderer(rend);
-        chart = ChartFactory.getTimeChartView(this, dataset, mRenderer, null);
-        mRenderer.setClickEnabled(true);
-        chart.setOnClickListener(new OnClickListener() {
-			
+		mRenderer.setBackgroundColor(Color.argb(100, 50, 50, 50));
+		mRenderer.setAxisTitleTextSize(16);
+		mRenderer.setChartTitleTextSize(20);
+		mRenderer.setLabelsTextSize(15);
+		mRenderer.setShowLegend(false);
+		mRenderer.setShowGrid(true);
+
+		TimeSeries data = new TimeSeries("Data");
+		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+		TimeSeries temp = populateSeries(data);
+		dataset.addSeries(temp);
+
+		XYSeriesRenderer rend = new XYSeriesRenderer();
+		rend.setPointStyle(PointStyle.SQUARE);
+		rend.setFillPoints(true);
+		rend.setLineWidth(Float.MIN_NORMAL);
+		mRenderer.addSeriesRenderer(rend);
+		chart = ChartFactory.getTimeChartView(this, dataset, mRenderer, null);
+		mRenderer.setClickEnabled(true);
+		chart.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View v) {
 				SeriesSelection ss = chart.getCurrentSeriesAndPoint();
@@ -83,12 +83,12 @@ public class MileageActivity extends Activity {
 				}
 			}
 		});
-        
-        
-        mRenderer.setXTitle("Date Trip Started");
-        mRenderer.setYTitle("Gas Mileage");		
-        LinearLayout layout = (LinearLayout) findViewById(R.id.chartM);
-        layout.addView(chart, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+
+
+		mRenderer.setXTitle("Date Trip Started");
+		mRenderer.setYTitle("Gas Mileage");		
+		LinearLayout layout = (LinearLayout) findViewById(R.id.chartM);
+		layout.addView(chart, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class MileageActivity extends Activity {
 		case INFO_DIALOG: 
 			Log.i(TAG, "Creating info dialog");
 			Dialog d = new Dialog(this);
-			
+
 			d.setContentView(R.layout.custom_dialog);
 
 			d.setCanceledOnTouchOutside(true);
@@ -114,15 +114,14 @@ public class MileageActivity extends Activity {
 		double index = bundle.getDouble("index");
 		Log.i(TAG, "Index is: "+index);
 		String[] data = getData((int) index);
-		
+
 		d.setTitle("Trip taken on: "+data[1].substring(0, 10));
-		
+
 		TextView dataTime = (TextView) d.findViewById(R.id.dataTime);
 		dataTime.setText(data[1]);
-		
+
 		TextView dataLength = (TextView) d.findViewById(R.id.dataLength);
 		int temp = (int) Double.parseDouble(data[2]);
-		Log.i(TAG, "temp is "+temp);
 		if (temp <= 1) {
 			dataLength.setText("less than a minute");
 		}
@@ -132,16 +131,16 @@ public class MileageActivity extends Activity {
 		else {
 			dataLength.setText(Integer.toString(temp)+" minutes");
 		}
-		
+
 		TextView dataGas = (TextView) d.findViewById(R.id.dataGas);
 		dataGas.setText(data[4]+" l");
-		
+
 		TextView dataGasMileage = (TextView) d.findViewById(R.id.dataGasMileage);
 		dataGasMileage.setText(data[5]+" km/l");
-		
+
 		TextView dataDistance = (TextView) d.findViewById(R.id.dataDistance);
 		dataDistance.setText(data[3]+" km");
-		
+
 		super.onPrepareDialog(id, d);
 	}
 
@@ -157,9 +156,9 @@ public class MileageActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case R.id.dateRefine:
-				Log.i(TAG, "date refine clicked!");
-				
+		case R.id.dateRefine:
+			Log.i(TAG, "date refine clicked!");
+
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -171,12 +170,10 @@ public class MileageActivity extends Activity {
 		Cursor c = db.query(DbHelper.TABLE, columns, null, null, null, null, null);
 		c.moveToFirst();
 		for (int x=0; x < c.getCount(); x++) {
-			Log.i(TAG, "Inside loop");
 			double miles = c.getDouble(c.getColumnIndex(DbHelper.C_MILEAGE));
 			String stime = c.getString(c.getColumnIndex(DbHelper.C_TIME));
 			int pkey = c.getInt(c.getColumnIndex(DbHelper.C_ID));
-			Log.i(TAG, "Miles is: "+miles+" Time is: "+stime+" PKey is: "+pkey);
-			
+
 			idLookup.put(x, pkey);
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date time = null;
@@ -192,29 +189,26 @@ public class MileageActivity extends Activity {
 		db.close();
 		return data;
 	}
-	
+
 	private String[] getData(int index) {
-		Log.i(TAG, "Index to find is: "+index);
 		String returnArray[] = new String[6];
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		int tsearch = idLookup.get(index);
 		String search = Integer.toString(tsearch);
 		Cursor c = db.query(DbHelper.TABLE, null, DbHelper.C_ID+" = "+search, null, null, null, null);
-		Log.i(TAG, "data returned is: "+c.getCount());
 		c.moveToFirst();
 		for(int x=0; x < c.getColumnCount(); x++) {
 			returnArray[x] = c.getString(x);
-			Log.i(TAG, x+ " is : "+returnArray[x]);
 		}
 		c.close();
 		db.close();
 		return returnArray;
 	}
-	
+
 	private void makeToast(String say) {
 		Context context = getApplicationContext();
 		int duration = Toast.LENGTH_SHORT;
-		
+
 		Toast toast = Toast.makeText(context, say, duration);
 		toast.show();
 	}
