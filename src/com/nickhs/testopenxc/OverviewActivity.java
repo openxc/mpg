@@ -33,9 +33,9 @@ public class OverviewActivity extends Activity {
 	private final String KP_APP_KEY =    "46549407b87447d7d9126070dc8abb72";
 	private final String KP_APP_SECRET = "5ea6c51ccee47f7939c43ca6d1edfb2a";
 
-	private boolean giveReward;
-
 	DbHelper dbHelper;
+	
+	boolean giveReward;
 
 	TextView todayGas;
 	TextView yesterGas;
@@ -55,11 +55,17 @@ public class OverviewActivity extends Activity {
 		lastMileage = (TextView) findViewById(R.id.lastTrip);
 		previousMileage = (TextView) findViewById(R.id.previousTrip);
 
-		Log.i(TAG, "Init Kiip");
-		Kiip.init(this, KP_APP_KEY, KP_APP_SECRET);
-
 		if (savedInstanceState != null) {
-			savedInstanceState.getBoolean("giveReward", false);
+			giveReward = savedInstanceState.getBoolean("give_reward", false);
+		}
+		
+		else {
+			giveReward = getIntent().getExtras().getBoolean("give_reward", false);
+		}
+		
+		if (giveReward) {
+			Log.i(TAG, "Init Kiip");
+			Kiip.init(this, KP_APP_KEY, KP_APP_SECRET);
 		}
 
 		drawTopLeft();
@@ -72,13 +78,18 @@ public class OverviewActivity extends Activity {
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
+		outState.putBoolean("give_reward", giveReward);
 	}
 
 
 	@Override
-	protected void onStart() {
+	protected void onStart() {		
+		if (giveReward) {
+			Log.i(TAG, "Starting Kiip Session");
+			Kiip.getInstance().startSession(this, startSessionListener);
+		}
+		
 		super.onStart();
-		Kiip.getInstance().startSession(this, startSessionListener);
 	}
 
 	private void giveRewards() {
@@ -94,22 +105,21 @@ public class OverviewActivity extends Activity {
 				"Average Mileage was: "+prevAverage+". ");
 
 		if (latestMileage > prevAverage) {
-			makeToast("Congratulations, you beat your average mileage!");
 			Log.i(TAG, "Awarding 2");
 			Kiip.getInstance().unlockAchievement("2", null);
 		}
 
 		else if (latestMileage > prevMileage) {
-			makeToast("Congratulations, you beat your last trip's mileage!");
 			Log.i(TAG, "Awarding 5");
 			Kiip.getInstance().unlockAchievement("5", null);
 		}
 
 		else {
-			makeToast("Well you are just amazing!");
 			Log.i(TAG, "Awarding 1");
 			Kiip.getInstance().unlockAchievement("1", null);
 		}
+		
+		giveReward = false;
 	}
 
 	public RequestListener<Resource> startSessionListener = new RequestListener<Resource>() {
@@ -140,7 +150,14 @@ public class OverviewActivity extends Activity {
 	@Override
 	protected void onStop() {
 		super.onStop();
-		Kiip.getInstance().endSession(this, null);
+		try {
+			Kiip.getInstance().endSession(this, null);
+		}
+		
+		catch (NullPointerException e) {
+		}
+		
+		dbHelper.close();
 	}
 
 	private void drawTopLeft() {
