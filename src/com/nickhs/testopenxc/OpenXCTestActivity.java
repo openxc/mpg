@@ -49,6 +49,7 @@ import com.openxc.remote.sources.usb.UsbVehicleDataSource;
 /* TODO: Send the range into a sharedpreferences.
  * Check on how many points before we die
  * Broadcast filter for ignition on
+ * Fix getLastData
  */
 
 public class OpenXCTestActivity extends Activity {
@@ -64,6 +65,7 @@ public class OpenXCTestActivity extends Activity {
 	private long START_TIME = -1;
 	private int POLL_FREQUENCY = -1;
 	private double lastUsageCount = 0;
+	private int CAN_TIMEOUT = 30;
 
 	private XYMultipleSeriesRenderer mSpeedRenderer = new XYMultipleSeriesRenderer();
 	private XYMultipleSeriesRenderer mGasRenderer = new XYMultipleSeriesRenderer();
@@ -355,7 +357,8 @@ public class OpenXCTestActivity extends Activity {
 				@Override
 				public void run() {
 					while(true) {
-						getMeasurements();
+						if (checkForCANFresh())	getMeasurements();
+						else stopRecording();
 						try {
 							Thread.sleep(POLL_FREQUENCY);
 						} catch (InterruptedException e) {
@@ -409,8 +412,22 @@ public class OpenXCTestActivity extends Activity {
 
 		return diff;
 	}
+	
+	private boolean checkForCANFresh() {
+		boolean ret = false;
+		try {
+			VehicleSpeed measurement = (VehicleSpeed) vehicleService.get(VehicleSpeed.class);
+			if (measurement.getAge() < CAN_TIMEOUT) ret = true;
+		} catch (UnrecognizedMeasurementTypeException e) {
+			e.printStackTrace();
+		} catch (NoValueException e) {
+			e.printStackTrace();
+		}
+		return ret;
+	}
 
 	private void getMeasurements() {
+		
 		double speedm = getSpeed();
 		double gas = getGasConsumed();
 
