@@ -492,9 +492,13 @@ public class OpenXCTestActivity extends Activity {
 				}
 			});
 			
+			vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
+			
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
+			e.printStackTrace();
+		} catch (RemoteVehicleServiceException e) {
 			e.printStackTrace();
 		}
 	}
