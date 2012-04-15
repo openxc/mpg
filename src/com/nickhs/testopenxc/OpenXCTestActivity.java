@@ -281,13 +281,13 @@ public class OpenXCTestActivity extends Activity {
 				}
 			}
 
-			/*	try { // FIXME renable listener when ready
+			try {
 				vehicleService.addListener(IgnitionStatus.class, ignitionListener);
 			} catch (RemoteVehicleServiceException e) {
 				e.printStackTrace();
 			} catch (UnrecognizedMeasurementTypeException e) {
 				e.printStackTrace();
-			} */
+			}
 
 			isBound = true;
 			pollManager();
