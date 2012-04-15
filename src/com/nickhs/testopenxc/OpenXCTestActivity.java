@@ -325,6 +325,7 @@ public class OpenXCTestActivity extends Activity {
 		public void receive(VehicleMeasurement arg0) {
 			IgnitionPosition ignitionPosition = 
 					((IgnitionStatus) arg0).getValue().enumValue();
+			Log.i(TAG, "Ignition is "+ignitionPosition.toString());
 			if (ignitionPosition == IgnitionPosition.OFF) {
 				Log.i(TAG, "Ignition is off. Halting recording");
 				stopRecording();
@@ -421,7 +422,7 @@ public class OpenXCTestActivity extends Activity {
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
-			e.printStackTrace();
+			Log.e(TAG, "NoValueException thrown, ret is "+ret);
 		}
 		return ret;
 	}
@@ -474,17 +475,23 @@ public class OpenXCTestActivity extends Activity {
 		FineOdometer oMeas;
 		try {
 			oMeas = (FineOdometer) vehicleService.get(FineOdometer.class);
-			double distanceTravelled = oMeas.getValue().doubleValue();
+			final double distanceTravelled = oMeas.getValue().doubleValue();
 			FuelConsumed fMeas = (FuelConsumed) vehicleService.get(FuelConsumed.class);
-			double fuelConsumed = fMeas.getValue().doubleValue();
-			double gasMileage = distanceTravelled/fuelConsumed;
+			final double fuelConsumed = fMeas.getValue().doubleValue();
+			final double gasMileage = distanceTravelled/fuelConsumed;
 			double endTime = getTime();
 			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, START_TIME, endTime);
 
-			makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
 			startActivity(new Intent(this, OverviewActivity.class));
 			POLL_FREQUENCY = -1;
-
+			
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);					
+				}
+			});
+			
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
