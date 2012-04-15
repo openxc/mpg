@@ -1,5 +1,11 @@
 package com.nickhs.testopenxc;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Timestamp;
+
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
 import org.achartengine.model.XYMultipleSeriesDataset;
@@ -15,8 +21,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
@@ -479,8 +487,29 @@ public class OpenXCTestActivity extends Activity {
 			FuelConsumed fMeas = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			final double fuelConsumed = fMeas.getValue().doubleValue();
 			final double gasMileage = distanceTravelled/fuelConsumed;
-			double endTime = getTime();
+			long endTime = getTime();
 			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, START_TIME, endTime);
+			
+			Bitmap speedChart = mSpeedChartView.toBitmap();
+			Bitmap gasChart = mGasChartView.toBitmap();
+			
+			File sdCard = Environment.getExternalStorageDirectory();
+			File dir = new File(sdCard.getAbsolutePath()+"/mpg/tracegraphs");
+			
+			if (!dir.exists()) {
+				Log.i(TAG, "Creating folders");
+				if(!dir.mkdirs()) {
+					Log.e(TAG, "Creating folders failed!");
+				}
+			}
+						
+			FileOutputStream fout1 = new FileOutputStream(new File(dir, START_TIME+"s.png"));
+			speedChart.compress(Bitmap.CompressFormat.PNG, 90, fout1);
+			fout1.close();
+			
+			FileOutputStream fout2 = new FileOutputStream(new File(dir, START_TIME+"g.png"));
+			gasChart.compress(Bitmap.CompressFormat.PNG, 90, fout2);
+			fout2.close();
 
 			startActivity(new Intent(this, OverviewActivity.class));
 			POLL_FREQUENCY = -1;
@@ -492,13 +521,17 @@ public class OpenXCTestActivity extends Activity {
 				}
 			});
 			
-			vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
+			vehicleService.removeListener(IgnitionStatus.class, ignitionListener); // FIXME check what's causing this
 			
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
 			e.printStackTrace();
 		} catch (RemoteVehicleServiceException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
