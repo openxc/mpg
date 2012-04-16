@@ -86,4 +86,12 @@ public class DbHelper extends SQLiteOpenHelper {
 		// Cursor c = db.query(TABLE, colToFetch, C_TIME+" > '"+startDate+"'", null, null, null, null);
 		return c;
 	}
+	
+	public Cursor getLastData(int numOfData, String col) {
+		String num = Integer.toString(numOfData);
+		SQLiteDatabase db = getReadableDatabase();
+		String[] colToFetch = {col};
+		Cursor c = db.query(TABLE, colToFetch, null, null, null, null, DbHelper.C_TIME+" DESC", num);
+		return c;
+	}
 }
