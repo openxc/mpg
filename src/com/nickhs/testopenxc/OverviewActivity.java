@@ -41,11 +41,11 @@ public class OverviewActivity extends Activity {
 	
 	SharedPreferences sharedPrefs;
 	
-	int TRIPLY = 1;
-	int HOURLY = 2;
-	int DAILY = 3;
-	int WEEKLY = 4;
-	int MONTHLY = 5;
+	int TRIPLY = 0;
+	int HOURLY = 1;
+	int DAILY = 2;
+	int WEEKLY = 3;
+	int MONTHLY = 4;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +73,7 @@ public class OverviewActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 		case R.id.graphResolution:
+			Log.i(TAG, "Graph Resolution selected");
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Select Graph Frequency");
 			builder.setItems(R.array.graphFrequency, new DialogInterface.OnClickListener() {
@@ -81,8 +82,13 @@ public class OverviewActivity extends Activity {
 					Editor editor = sharedPrefs.edit();
 					Log.i(TAG, "Graph frequency changed to "+which);
 					editor.putInt("graphFrequency", which);
+					editor.commit();
 				}
 			});
+			
+			AlertDialog alert = builder.create();
+			alert.show();
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -98,19 +104,23 @@ public class OverviewActivity extends Activity {
 		@Override
 		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 				String key) {
-			
+			Log.i(TAG, "Redrawing graphs!");
+			drawBottomLeft();
+			drawTopLeft();
 		}
 	};
 
 	private void drawTopLeft() {
 		GraphicalView chartPetrol = getChart(DbHelper.C_FUEL, "Gas Used", "litres", false);
 		FrameLayout layout = (FrameLayout) findViewById(R.id.topLeft);
+		layout.removeAllViews();
 		layout.addView(chartPetrol);
 	}
 
 	private void drawBottomLeft() {
 		GraphicalView chartMileage = getChart(DbHelper.C_MILEAGE, "Average Mileage", "km/l", true);
 		FrameLayout layout = (FrameLayout) findViewById(R.id.bottomLeft);
+		layout.removeAllViews();
 		layout.addView(chartMileage);
 	}
 
@@ -163,7 +173,6 @@ public class OverviewActivity extends Activity {
 		renderer.setShowLegend(false);
 		renderer.setApplyBackgroundColor(true);
 		renderer.setBackgroundColor(Color.argb(1000, 50, 50, 50));
-		renderer.setXTitle("Week Number");
 		renderer.setYTitle(dataName+" ("+units+")");
 		renderer.setShowGrid(true);
 		renderer.setYAxisMin(0);
@@ -180,7 +189,8 @@ public class OverviewActivity extends Activity {
 
 	private TimeSeries getSeries(String column, String dataName, boolean average) {
 		TimeSeries series = new TimeSeries(dataName);
-		int pref = sharedPrefs.getInt("graphFrequency", 1);
+		int pref = sharedPrefs.getInt("graphFrequency", 3);
+		Log.i(TAG, "Pref is: "+pref);
 		int bars = 12; // FIXME load from settings
 		
 		if (pref == DAILY) {
@@ -192,7 +202,7 @@ public class OverviewActivity extends Activity {
 				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
 				total = calculateData(data, average);
 
-				series.add(startDate.getDayOfWeek(), total);
+				series.add(startDate.getDayOfMonth(), total);
 				
 				endDate = endDate.minusDays(1);
 				startDate = startDate.minusDays(1);
