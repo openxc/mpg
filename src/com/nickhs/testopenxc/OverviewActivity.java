@@ -11,12 +11,21 @@ import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 import org.joda.time.DateMidnight;
+import org.joda.time.DateTime;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -29,6 +38,14 @@ public class OverviewActivity extends Activity {
 	TextView yesterGas;
 	TextView lastMileage;
 	TextView previousMileage;
+	
+	SharedPreferences sharedPrefs;
+	
+	int TRIPLY = 1;
+	int HOURLY = 2;
+	int DAILY = 3;
+	int WEEKLY = 4;
+	int MONTHLY = 5;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,12 +59,48 @@ public class OverviewActivity extends Activity {
 		yesterGas = (TextView) findViewById(R.id.lastUsage);
 		lastMileage = (TextView) findViewById(R.id.lastTrip);
 		previousMileage = (TextView) findViewById(R.id.previousTrip);
+		
+		sharedPrefs = getPreferences(MODE_PRIVATE);
+		sharedPrefs.registerOnSharedPreferenceChangeListener(prefListener);
 
 		drawTopLeft();
-		drawBotomLeft();
+		drawBottomLeft();
 		drawTopRight();
 		drawBottomRight();
 	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+		case R.id.graphResolution:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Select Graph Frequency");
+			builder.setItems(R.array.graphFrequency, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					Editor editor = sharedPrefs.edit();
+					Log.i(TAG, "Graph frequency changed to "+which);
+					editor.putInt("graphFrequency", which);
+				}
+			});
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.overviewmenu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	public OnSharedPreferenceChangeListener prefListener = new OnSharedPreferenceChangeListener() {
+		@Override
+		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+				String key) {
+			
+		}
+	};
 
 	private void drawTopLeft() {
 		GraphicalView chartPetrol = getChart(DbHelper.C_FUEL, "Gas Used", "litres", false);
@@ -55,7 +108,7 @@ public class OverviewActivity extends Activity {
 		layout.addView(chartPetrol);
 	}
 
-	private void drawBotomLeft() {
+	private void drawBottomLeft() {
 		GraphicalView chartMileage = getChart(DbHelper.C_MILEAGE, "Average Mileage", "km/l", true);
 		FrameLayout layout = (FrameLayout) findViewById(R.id.bottomLeft);
 		layout.addView(chartMileage);
@@ -127,22 +180,87 @@ public class OverviewActivity extends Activity {
 
 	private TimeSeries getSeries(String column, String dataName, boolean average) {
 		TimeSeries series = new TimeSeries(dataName);
-		DateMidnight endDate = new DateMidnight();
-		endDate = endDate.minusDays(endDate.getDayOfWeek());
-		DateMidnight startDate = endDate.minusDays(7);
-		int weeks = 12; // FIXME load from settings
+		int pref = sharedPrefs.getInt("graphFrequency", 1);
+		int bars = 12; // FIXME load from settings
+		
+		if (pref == DAILY) {
+			DateMidnight endDate = new DateMidnight();
+			DateMidnight startDate = endDate.minusDays(1);
+			
+			for (int i=0; i < bars; i++) {
+				double total = 0;
+				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				total = calculateData(data, average);
 
-		for (int i=0; i < weeks; i++) {
-			double total = 0;
-			Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
-			total = calculateData(data, average);
-
-			series.add(startDate.getWeekOfWeekyear(), total);
-
-			endDate = endDate.minusWeeks(1);
-			startDate = startDate.minusWeeks(1);
+				series.add(startDate.getDayOfWeek(), total);
+				
+				endDate = endDate.minusDays(1);
+				startDate = startDate.minusDays(1);
+			}
 		}
+		
+		else if (pref == HOURLY) {
+			DateTime endDate = new DateTime();
+			endDate = endDate.minusMinutes(endDate.getMinuteOfHour());
+			DateTime startDate = endDate.minusHours(1);
+			
+			for (int i=0; i < bars; i++) {
+				double total = 0;
+				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				total = calculateData(data, average);
 
+				series.add(startDate.getHourOfDay(), total);
+				
+				endDate = endDate.minusHours(1);
+				startDate = startDate.minusHours(1);
+			}
+		}
+		
+		else if (pref == WEEKLY) {
+			DateMidnight endDate = new DateMidnight();
+			endDate = endDate.minusDays(endDate.getDayOfWeek());
+			DateMidnight startDate = endDate.minusDays(7);
+			
+			for (int i=0; i < bars; i++) {
+				double total = 0;
+				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				total = calculateData(data, average);
+
+				series.add(startDate.getWeekOfWeekyear(), total);
+				
+				endDate = endDate.minusDays(7);
+				startDate = startDate.minusDays(7);
+			}
+		}
+		
+		else if (pref == MONTHLY) {
+			DateMidnight endDate = new DateMidnight();
+			endDate = endDate.minusDays(endDate.getDayOfMonth());
+			DateMidnight startDate = endDate.minusMonths(1);
+			
+			for (int i=0; i < bars; i++) {
+				double total = 0;
+				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				total = calculateData(data, average);
+
+				series.add(startDate.getMonthOfYear(), total);
+				
+				endDate = endDate.minusMonths(1);
+				startDate = startDate.minusMonths(1);
+			}
+		}
+		
+		else if (pref == TRIPLY) {
+			for (int i=0; i < bars; i++) {
+			//	Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				// FIXME
+			}
+		}
+		
+		else {
+			Log.e(TAG, "Invalid value! "+pref);
+		}
+		
 		return series;
 	}
 

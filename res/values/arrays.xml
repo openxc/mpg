@@ -16,4 +16,12 @@
         <item name="5000">5000</item>
         <item name="10000">10000</item>
     </string-array>
+    
+    <string-array name="graphFrequency">
+        <item name="triply">Every trip</item>
+        <item name="hourly">Hourly</item>
+        <item name="daily">Daily</item>
+        <item name="weekly">Weekly</item>
+        <item name="monthly">Monthly</item>
+    </string-array>
 </resources>
