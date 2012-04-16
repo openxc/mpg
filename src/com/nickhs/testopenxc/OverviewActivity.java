@@ -259,12 +259,15 @@ public class OverviewActivity extends Activity {
 				startDate = startDate.minusMonths(1);
 			}
 		}
-		
+
 		else if (pref == TRIPLY) {
-			for (int i=0; i < bars; i++) {
-			//	Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
-				// FIXME
+			Cursor data = dbHelper.getLastData(bars, column);
+			data.moveToLast();
+			for (int i=1; i < bars+1; i++) {
+				series.add(i, data.getDouble(0));
+				data.moveToPrevious();
 			}
+			data.close();
 		}
 		
 		else {
