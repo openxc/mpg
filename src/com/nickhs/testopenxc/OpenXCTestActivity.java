@@ -56,7 +56,7 @@ public class OpenXCTestActivity extends Activity {
 	VehicleService vehicleService;
 	DbHelper dbHelper;
 
-	private boolean isBound = false;	
+	private boolean isBound = false;
 	private boolean isRunning = false;
 	private boolean scrollGraph = true;
 
@@ -323,7 +323,7 @@ public class OpenXCTestActivity extends Activity {
 	IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
 		@Override
 		public void receive(VehicleMeasurement arg0) {
-			IgnitionPosition ignitionPosition = 
+			IgnitionPosition ignitionPosition =
 					((IgnitionStatus) arg0).getValue().enumValue();
 			Log.i(TAG, "Ignition is "+ignitionPosition.toString());
 			if (ignitionPosition == IgnitionPosition.OFF) {
@@ -413,7 +413,7 @@ public class OpenXCTestActivity extends Activity {
 
 		return diff;
 	}
-	
+
 	private boolean checkForCANFresh() {
 		boolean ret = false;
 		try {
@@ -428,7 +428,7 @@ public class OpenXCTestActivity extends Activity {
 	}
 
 	private void getMeasurements() {
-		
+
 		double speedm = getSpeed();
 		double gas = getGasConsumed();
 
@@ -446,8 +446,7 @@ public class OpenXCTestActivity extends Activity {
 			}
 		});
 
-		double time = getTime();
-		drawGraph((time-START_TIME), speedm, gas);
+		drawGraph(getTime(), speedm, gas);
 	}
 
 	private void pollManager() {
@@ -484,16 +483,16 @@ public class OpenXCTestActivity extends Activity {
 
 			startActivity(new Intent(this, OverviewActivity.class));
 			POLL_FREQUENCY = -1;
-			
+
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);					
+					makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
 				}
 			});
-			
+
 			vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
-			
+
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
@@ -516,7 +515,7 @@ public class OpenXCTestActivity extends Activity {
 		rend.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
 
 		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-		dataset.addSeries(series);        
+		dataset.addSeries(series);
 
 		XYSeriesRenderer tempRend = new XYSeriesRenderer();
 		tempRend.setLineWidth(2);
