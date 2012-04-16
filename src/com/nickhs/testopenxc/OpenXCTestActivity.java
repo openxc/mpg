@@ -519,6 +519,8 @@ public class OpenXCTestActivity extends Activity {
 		dataset.addSeries(series);        
 
 		XYSeriesRenderer tempRend = new XYSeriesRenderer();
+		tempRend.setLineWidth(2);
+		tempRend.setColor(Color.parseColor("#FFBB33"));
 		rend.addSeriesRenderer(tempRend);
 		return dataset;
 	}
