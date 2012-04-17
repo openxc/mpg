@@ -53,19 +53,16 @@ import com.openxc.remote.sources.usb.UsbVehicleDataSource;
  */
 
 public class OpenXCTestActivity extends Activity {
-	VehicleService vehicleService;
-	DbHelper dbHelper;
+	private final static String TAG = "OpenXCTestActivity";
+	private final static int CAN_TIMEOUT = 30;
+	private final static int OPTIMAL_SPEED = 97;
 
-	private boolean isBound = false;	
-	private boolean isRunning = false;
+	private boolean mIsRecording = false;
+
 	private boolean scrollGraph = true;
 
-	private static int OPTIMAL_SPEED = 97;
-
-	private long START_TIME = -1;
-	private int POLL_FREQUENCY = -1;
+	private long mStartTime = -1;
 	private double lastUsageCount = 0;
-	private int CAN_TIMEOUT = 30;
 
 	private XYMultipleSeriesRenderer mSpeedRenderer = new XYMultipleSeriesRenderer();
 	private XYMultipleSeriesRenderer mGasRenderer = new XYMultipleSeriesRenderer();
@@ -74,14 +71,15 @@ public class OpenXCTestActivity extends Activity {
 	private GraphicalView mSpeedChartView;
 	private GraphicalView mGasChartView;
 
-	final static String TAG = "XCTest";
-
 	private TextView speed;
 	private TextView mpg;
 	private ToggleButton scroll;
 	private SharedPreferences sharedPrefs;
+    private IgnitionPosition mLastIgnitionPosition;
+	private VehicleService vehicleService;
+	private DbHelper dbHelper;
+    private MeasurementUpdater mMeasurementUpdater;
 
-	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -113,7 +111,6 @@ public class OpenXCTestActivity extends Activity {
 		XYMultipleSeriesDataset gDataset = initGraph(mGasRenderer, gasSeries);
 		XYMultipleSeriesDataset sDataset = initGraph(mSpeedRenderer, speedSeries);
 
-		START_TIME = getTime();
 
 		if (savedInstanceState != null) {
 			double[] speedX = savedInstanceState.getDoubleArray("speedX");
@@ -130,7 +127,7 @@ public class OpenXCTestActivity extends Activity {
 
 			Log.i(TAG, "Recreated graph");
 
-			START_TIME = savedInstanceState.getLong("time");
+			mStartTime = savedInstanceState.getLong("time");
 		}
 
 		mSpeedRenderer.setXTitle("Time (ms)");
@@ -173,7 +170,8 @@ public class OpenXCTestActivity extends Activity {
 		outState.putDoubleArray("speedY", speedY);
 		outState.putDoubleArray("gasX", gasX);
 		outState.putDoubleArray("gasY", gasY);
-		outState.putLong("time", START_TIME);
+		outState.putLong("time", mStartTime);
+		outState.putBoolean("isRecording", mIsRecording);
 	}
 
 	private double[] convertToArray(XYSeries series, String type) {
@@ -201,7 +199,12 @@ public class OpenXCTestActivity extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 		Log.i(TAG, "onDestroy called");
-		POLL_FREQUENCY = -1;
+        stopMeasurementUpdater();
+        try {
+            vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
+        } catch(RemoteVehicleServiceException e) {
+            Log.w(TAG, "Unable to remove ignition listener", e);
+        }
 	}
 
 	@Override
@@ -225,12 +228,11 @@ public class OpenXCTestActivity extends Activity {
 			stopRecording();
 			break;
 		case R.id.pauseRecording:
-			if (isRunning) {
-				POLL_FREQUENCY = -1;
+			if (mIsRecording) {
+				stopMeasurementUpdater();
 				item.setIcon(android.R.drawable.ic_media_play);
-			}
-			else {
-				pollManager();
+			} else {
+                startMeasurementUpdater();
 				item.setIcon(android.R.drawable.ic_media_pause);
 			}
 			break;
@@ -252,7 +254,6 @@ public class OpenXCTestActivity extends Activity {
 		public void onServiceDisconnected(ComponentName name) {
 			vehicleService = null;
 			Log.i(TAG, "Service unbound");
-			isBound = false;
 		}
 
 		@Override
@@ -289,8 +290,6 @@ public class OpenXCTestActivity extends Activity {
 				e.printStackTrace();
 			}
 
-			isBound = true;
-			pollManager();
 		}
 	};
 
@@ -304,10 +303,6 @@ public class OpenXCTestActivity extends Activity {
 				Log.i(TAG, "finishing");
 				finish();
 				startActivity(new Intent(getApplicationContext(), OpenXCTestActivity.class));
-			}
-
-			else {
-				pollManager();
 			}
 		}
 	};
@@ -323,13 +318,24 @@ public class OpenXCTestActivity extends Activity {
 	IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
 		@Override
 		public void receive(VehicleMeasurement arg0) {
-			IgnitionPosition ignitionPosition = 
+			IgnitionPosition ignitionPosition =
 					((IgnitionStatus) arg0).getValue().enumValue();
-			Log.i(TAG, "Ignition is "+ignitionPosition.toString());
-			if (ignitionPosition == IgnitionPosition.OFF) {
-				Log.i(TAG, "Ignition is off. Halting recording");
-				stopRecording();
-			}
+            if(ignitionPosition == IgnitionPosition.RUN ||
+                    ignitionPosition == IgnitionPosition.OFF) {
+                Log.d(TAG, "Ignition is " + ignitionPosition +
+                        " and last position was " + mLastIgnitionPosition);
+                if(ignitionPosition == IgnitionPosition.RUN &&
+                        mLastIgnitionPosition == IgnitionPosition.OFF
+                        || mLastIgnitionPosition == null) {
+                    Log.i(TAG, "Ignition switched on -- starting recording");
+                    startRecording();
+                } else if(ignitionPosition == IgnitionPosition.OFF
+                        && mLastIgnitionPosition == IgnitionPosition.RUN) {
+                    Log.i(TAG, "Ignition switched off -- halting recording");
+                    stopRecording();
+                }
+                mLastIgnitionPosition = ignitionPosition;
+            }
 		}
 	};
 
@@ -338,11 +344,13 @@ public class OpenXCTestActivity extends Activity {
 		gasSeries.add(time, gas);
 		if (scrollGraph) {
 			if (time > 50000) { // FIXME should be a preference
+                String choice = sharedPrefs.getString("update_interval", "1000");
+                int pollFrequency = Integer.parseInt(choice);
 				double max = speedSeries.getMaxX();
-				mSpeedRenderer.setXAxisMax(max+POLL_FREQUENCY);
+				mSpeedRenderer.setXAxisMax(max + pollFrequency);
 				mSpeedRenderer.setXAxisMin(max-50000); //FIXME
-				mGasRenderer.setXAxisMax(max+POLL_FREQUENCY);
-				mGasRenderer.setXAxisMin(max-50000);
+				mGasRenderer.setXAxisMax(max + pollFrequency);
+				mGasRenderer.setXAxisMin(max - 50000);
 			}
 		}
 		if (mSpeedChartView != null) {
@@ -351,33 +359,29 @@ public class OpenXCTestActivity extends Activity {
 		}
 	}
 
-	private void updateMeasurements() {
-		if(isBound) {
-			isRunning = true;
-			new Thread(new Runnable () {
-				@Override
-				public void run() {
-					while(true) {
-						if (checkForCANFresh())	getMeasurements();
-						else stopRecording();
-						try {
-							Thread.sleep(POLL_FREQUENCY);
-						} catch (InterruptedException e) {
-							Log.e(TAG, "InterruptedException");
-						} catch (IllegalArgumentException e) {
-							Log.i(TAG, "Breaking out of measurement loop");
-							isRunning = false;
-							break;
-						}
-					}
-				}
-			}).start();
-		}
+    private class MeasurementUpdater extends Thread {
+        private boolean mRunning = true;
 
-		else {
-			Log.e(TAG, "No Service Bound - this should not happen");
-		}
-	}
+        public void done() {
+            mRunning = false;
+        }
+
+        public void run() {
+            while(mRunning) {
+                if (checkForCANFresh())	getMeasurements();
+                else stopRecording();
+
+                String choice = sharedPrefs.getString("update_interval", "1000");
+                int pollFrequency = Integer.parseInt(choice);
+                try {
+                    Thread.sleep(pollFrequency);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Measurement updater was interrupted", e);
+                }
+            }
+            Log.d(TAG, "Measurement polling stopped");
+        }
+    }
 
 	private double getSpeed() {
 		VehicleSpeed speed;
@@ -407,13 +411,10 @@ public class OpenXCTestActivity extends Activity {
 
 		double diff = temp - lastUsageCount;
 		lastUsageCount = temp;
-		if (diff > 1) { // catch bogus values FIXME
-			diff = 0;
-		}
 
 		return diff;
 	}
-	
+
 	private boolean checkForCANFresh() {
 		boolean ret = false;
 		try {
@@ -428,7 +429,7 @@ public class OpenXCTestActivity extends Activity {
 	}
 
 	private void getMeasurements() {
-		
+
 		double speedm = getSpeed();
 		double gas = getGasConsumed();
 
@@ -446,15 +447,26 @@ public class OpenXCTestActivity extends Activity {
 			}
 		});
 
-		double time = getTime();
-		drawGraph((time-START_TIME), speedm, gas);
+		drawGraph(getTime(), speedm, gas);
 	}
 
-	private void pollManager() {
-		String choice = sharedPrefs.getString("update_interval", "1000");
-		POLL_FREQUENCY = Integer.parseInt(choice);
-		if (!isRunning) updateMeasurements();
-	}
+    private void startMeasurementUpdater() {
+        stopMeasurementUpdater();
+        mMeasurementUpdater = new MeasurementUpdater();
+        mMeasurementUpdater.start();
+        
+        mIsRecording = true;
+    }
+
+    private void stopMeasurementUpdater() {
+        if(mMeasurementUpdater != null) {
+            mMeasurementUpdater.done();
+        }
+
+        mMeasurementUpdater = null;
+        
+        mIsRecording = false;
+    }
 
 	private long getTime() {
 		Time curTime = new Time();
@@ -471,36 +483,48 @@ public class OpenXCTestActivity extends Activity {
 		toast.show();
 	}
 
+    private void startRecording() {
+        if(mIsRecording) {
+            Log.d(TAG, "Stopping recording before starting another one");
+            stopRecording();
+        }
+		mStartTime = getTime();
+        startMeasurementUpdater();
+        mIsRecording = true;
+    }
+
 	private void stopRecording() {
-		FineOdometer oMeas;
+        if(!mIsRecording) {
+            Log.d(TAG, "No active recording available to stop");
+            return;
+        }
+        stopMeasurementUpdater();
+
 		try {
-			oMeas = (FineOdometer) vehicleService.get(FineOdometer.class);
+			FineOdometer oMeas = (FineOdometer) vehicleService.get(FineOdometer.class);
 			final double distanceTravelled = oMeas.getValue().doubleValue();
 			FuelConsumed fMeas = (FuelConsumed) vehicleService.get(FuelConsumed.class);
 			final double fuelConsumed = fMeas.getValue().doubleValue();
 			final double gasMileage = distanceTravelled/fuelConsumed;
 			double endTime = getTime();
-			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, START_TIME, endTime);
+			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, mStartTime, endTime);
 
 			startActivity(new Intent(this, OverviewActivity.class));
-			POLL_FREQUENCY = -1;
-			
+            stopMeasurementUpdater();
+
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);					
+					makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
 				}
 			});
-			
-			vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
-			
+
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
 			e.printStackTrace();
-		} catch (RemoteVehicleServiceException e) {
-			e.printStackTrace();
 		}
+        mIsRecording = false;
 	}
 
 	private XYMultipleSeriesDataset initGraph(XYMultipleSeriesRenderer rend, XYSeries series) {
@@ -516,7 +540,7 @@ public class OpenXCTestActivity extends Activity {
 		rend.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
 
 		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-		dataset.addSeries(series);        
+		dataset.addSeries(series);
 
 		XYSeriesRenderer tempRend = new XYSeriesRenderer();
 		tempRend.setLineWidth(2);

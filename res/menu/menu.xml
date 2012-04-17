@@ -7,7 +7,6 @@
     
     <item android:id="@+id/viewOverview"
     	  android:title="@string/mileTitle"
-    	  android:showAsAction="ifRoom" 
     />
         
     <item android:id="@+id/stopRecording"
@@ -18,7 +17,7 @@
     
     <item android:id="@+id/pauseRecording"
           android:title="@string/pauseTitle"
-          android:icon="@android:drawable/ic_media_pause"
+          android:icon="@android:drawable/ic_media_play"
           android:showAsAction="ifRoom"
     />
     
@@ -34,7 +33,6 @@
     
     <item android:id="@+id/viewGraphs"
           android:title="@string/viewGraphs"
-          android:showAsAction="ifRoom"
     />
 
 </menu>
