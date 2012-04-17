@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     
-	<item android:id="@+id/dateRefine"
-	      android:text="Refine date range"
+   	<item android:id="@+id/startDateRefine"
+	      android:text="Select Start Date"
 	      android:showAsAction="ifRoom"
-	      android:titleCondensed="Date"
-	      android:actionViewClass="android.widget.EditText" />
+	      android:titleCondensed="Start Date"
+ 	/>
+	
+	<item android:id="@+id/endDateRefine"
+	      android:text="Select End Date"
+	      android:showAsAction="ifRoom"
+	      android:titleCondensed="End Date"
+	/>
+	
+	<item android:id="@+id/clearDateRefine"
+	    android:text="Clear All Dates"
+	    android:showAsAction="ifRoom"
+	    android:titleCondensed="Clear Dates"
+	/>
     
 </menu>

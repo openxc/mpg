@@ -13,8 +13,13 @@ import org.achartengine.model.TimeSeries;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
+import org.joda.time.DateMidnight;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
 import android.content.Context;
 import android.database.Cursor;
@@ -29,20 +34,29 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.EditText;
+import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MileageActivity extends Activity {
-	private HashMap<Integer, Integer> idLookup;
+	private HashMap<Integer, Integer> idLookup = new HashMap<Integer, Integer>();
 
 	private static final String TAG = "MileageActivity";
+	private final static String PATTERN = "YYYY-MM-dd";
+
 	private DbHelper dbHelper;
+	
+	final static String END_DATE = "endDate";
+	final static String START_END = "startDate";
 
 	private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer();
+	private TimeSeries mSeries;
 	private GraphicalView chart;
-
+	
+	private Long mStartDate;
+	private Long mEndDate;
+	
 	final static int INFO_DIALOG = 1;
 
 	@Override
@@ -50,6 +64,7 @@ public class MileageActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.mileage);
 		dbHelper = new DbHelper(this);
+		setDates();
 
 		mRenderer.setApplyBackgroundColor(true);
 		mRenderer.setBackgroundColor(Color.argb(100, 50, 50, 50));
@@ -59,10 +74,10 @@ public class MileageActivity extends Activity {
 		mRenderer.setShowLegend(false);
 		mRenderer.setShowGrid(true);
 
-		TimeSeries data = new TimeSeries("Data");
 		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-		TimeSeries temp = populateSeries(data);
-		dataset.addSeries(temp);
+		mSeries = new TimeSeries("Data");
+		populateSeries();
+		dataset.addSeries(mSeries);
 
 		XYSeriesRenderer rend = new XYSeriesRenderer();
 		rend.setPointStyle(PointStyle.SQUARE);
@@ -83,12 +98,12 @@ public class MileageActivity extends Activity {
 				}
 			}
 		});
-
-
+		
 		mRenderer.setXTitle("Date Trip Started");
 		mRenderer.setYTitle("Gas Mileage");		
 		LinearLayout layout = (LinearLayout) findViewById(R.id.chartM);
 		layout.addView(chart, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		
 	}
 
 	@Override
@@ -148,26 +163,77 @@ public class MileageActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu2, menu);
-		EditText startDate = (EditText) menu.findItem(R.id.dateRefine).getActionView();
-		startDate.setText("None set");
 		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.dateRefine:
-			Log.i(TAG, "date refine clicked!");
-
+		case R.id.startDateRefine:
+			Log.i(TAG, "start date refine clicked!");
+			createDatePicker(1);
+			break;
+		case R.id.endDateRefine:
+			Log.i(TAG, "end date refine clicked!");
+			createDatePicker(2);
+			break;
+		case R.id.clearDateRefine:
+			setDates();
+			populateSeries();
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+	private void createDatePicker(int choice) {
+		DateMidnight today = new DateMidnight();
+		DatePickerDialog dialog;
+		if (choice == 1) {
+			dialog = new DatePickerDialog(this, startDateListener, today.getYear(),
+					today.getMonthOfYear(), today.getDayOfWeek());
+			dialog.getDatePicker().setMaxDate(mEndDate);
+		}
+		else {
+			dialog = new DatePickerDialog(this, endDateListener, today.getYear(),
+					today.getMonthOfYear(), today.getDayOfWeek());
+			dialog.getDatePicker().setMinDate(mStartDate);
+		}
+		dialog.show();
+	}
+	
+	public OnDateSetListener startDateListener = new OnDateSetListener() {
+		
+		@Override
+		public void onDateSet(DatePicker view, int year, int monthOfYear,
+				int dayOfMonth) {
+			Log.i(TAG, "Date picked!");
+			DateMidnight startDate = new DateMidnight(year, monthOfYear+1, dayOfMonth);
+			mStartDate = startDate.getMillis();
+			populateSeries();
+		}
+	};
+	
+	public OnDateSetListener endDateListener = new OnDateSetListener() {
+		
+		@Override
+		public void onDateSet(DatePicker view, int year, int monthOfYear,
+				int dayOfMonth) {
+			Log.i(TAG, "Date picked!");
+			DateMidnight date = new DateMidnight(year, monthOfYear+1, dayOfMonth);
+			mEndDate = date.getMillis();
+			populateSeries();
+		}
+	};
 
-	private TimeSeries populateSeries(TimeSeries data) {
-		idLookup = new HashMap<Integer, Integer>();
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
+	private void populateSeries() {
+		idLookup.clear();
+		mSeries.clear();
+		
 		String[] columns = {DbHelper.C_MILEAGE, DbHelper.C_TIME, DbHelper.C_ID};
-		Cursor c = db.query(DbHelper.TABLE, columns, null, null, null, null, null);
+		
+		String start = new DateMidnight(mStartDate).toString(PATTERN);
+		String end = new DateMidnight(mEndDate).toString(PATTERN);
+		
+		Cursor c = dbHelper.getLastData(start, end, columns);
 		c.moveToFirst();
 		for (int x=0; x < c.getCount(); x++) {
 			double miles = c.getDouble(c.getColumnIndex(DbHelper.C_MILEAGE));
@@ -182,12 +248,18 @@ public class MileageActivity extends Activity {
 			} catch (ParseException e) {
 				Log.e(TAG, "Malformed time recieved. Crashing!");
 			}
-			data.add(time, miles);
+			mSeries.add(time, miles);
 			c.moveToNext();
 		}
 		c.close();
-		db.close();
-		return data;
+		
+		if (chart != null) {
+			chart.repaint();
+			mRenderer.setXAxisMax(mSeries.getMaxX()+1);
+			mRenderer.setXAxisMin(mSeries.getMinX()-1);
+			mRenderer.setYAxisMax(mSeries.getMaxY()+1);
+			mRenderer.setYAxisMin(mSeries.getMinY()+1);
+		}
 	}
 
 	private String[] getData(int index) {
@@ -204,7 +276,14 @@ public class MileageActivity extends Activity {
 		db.close();
 		return returnArray;
 	}
-
+	
+	private void setDates() {
+		DateMidnight now = new DateMidnight();
+		now = now.plusDays(1);
+		mEndDate = now.getMillis();
+		mStartDate = now.minusYears(5).getMillis(); // FIXME :(
+	}
+	
 	private void makeToast(String say) {
 		Context context = getApplicationContext();
 		int duration = Toast.LENGTH_SHORT;

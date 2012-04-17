@@ -77,20 +77,29 @@ public class DbHelper extends SQLiteOpenHelper {
 		}
 	}
 	
-	public Cursor getLastData(String startDate, String endDate, String col) {
+	public Cursor getLastData(String startDate, String endDate, String col[]) {// FIXME more checks would be better
 		SQLiteDatabase db = getReadableDatabase();
-		String[] colToFetch = {col};
-		Cursor c = db.query(TABLE, colToFetch, 
-				C_TIME+" BETWEEN '"+startDate+"' AND '"+endDate+"'",
-				null, null, null, null);
-		// Cursor c = db.query(TABLE, colToFetch, C_TIME+" > '"+startDate+"'", null, null, null, null);
+		String[] colToFetch = col;
+		Cursor c;
+		
+		if (startDate == null && endDate == null) {
+			c = db.query(TABLE, colToFetch, 
+					null, null, null, null, null);
+		}
+		
+		else {
+			c = db.query(TABLE, colToFetch, 
+					C_TIME+" BETWEEN '"+startDate+"' AND '"+endDate+"'",
+					null, null, null, null);
+		}
+		
 		return c;
 	}
 	
-	public Cursor getLastData(int numOfData, String col) {
+	public Cursor getLastData(int numOfData, String[] col) {
 		String num = Integer.toString(numOfData);
 		SQLiteDatabase db = getReadableDatabase();
-		String[] colToFetch = {col};
+		String[] colToFetch = col;
 		Cursor c = db.query(TABLE, colToFetch, null, null, null, null, DbHelper.C_TIME+" DESC", num);
 		return c;
 	}

@@ -7,7 +7,6 @@ import org.achartengine.GraphicalView;
 import org.achartengine.chart.BarChart.Type;
 import org.achartengine.model.TimeSeries;
 import org.achartengine.model.XYMultipleSeriesDataset;
-import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 import org.joda.time.DateMidnight;
@@ -31,7 +30,7 @@ import android.widget.TextView;
 
 public class OverviewActivity extends Activity {
 	final static String TAG = "OverviewActivity";
-	final static String pattern = "YYYY-MM-dd";
+	final static String PATTERN = "YYYY-MM-dd";
 	DbHelper dbHelper;
 
 	TextView todayGas;
@@ -127,24 +126,23 @@ public class OverviewActivity extends Activity {
 	private void drawTopRight() {
 		DateMidnight todayStart = new DateMidnight();
 		DateMidnight todayEnd = todayStart.plusDays(1);
-		Cursor c = dbHelper.getLastData(todayStart.toString(pattern), todayEnd.toString(pattern), DbHelper.C_FUEL);
+		String[] toFetch = {DbHelper.C_FUEL};
+		Cursor c = dbHelper.getLastData(todayStart.toString(PATTERN), todayEnd.toString(PATTERN), toFetch);
 		double today = calculateData(c, false);
 		String stringToday = new DecimalFormat("##").format(today);
 		todayGas.setText(stringToday);
 
 		todayStart = todayStart.minusDays(1);
 		todayEnd = todayEnd.minusDays(1);
-		Cursor d = dbHelper.getLastData(todayStart.toString(pattern), todayEnd.toString(pattern), DbHelper.C_FUEL);
+		Cursor d = dbHelper.getLastData(todayStart.toString(PATTERN), todayEnd.toString(PATTERN), toFetch);
 		double yesterday = calculateData(d, false);
 		String stringYesterday = new DecimalFormat("##").format(yesterday);
 		yesterGas.setText(stringYesterday);
 	}
 
 	private void drawBottomRight() {
-		DateMidnight todayStart = new DateMidnight();
-		DateMidnight todayEnd = todayStart.plusDays(1);
-		todayStart = todayStart.minusMonths(1); // this is really, really bad!
-		Cursor c = dbHelper.getLastData(todayStart.toString(pattern), todayEnd.toString(pattern), DbHelper.C_MILEAGE);
+		String[] toFetch = {DbHelper.C_MILEAGE};
+		Cursor c = dbHelper.getLastData(2, toFetch);
 		if(c.moveToLast()) {
 			String sLastTrip = new DecimalFormat("##").format(c.getDouble(0));
 			if(c.moveToPrevious()) {
@@ -187,11 +185,12 @@ public class OverviewActivity extends Activity {
 		return chart;
 	}
 
-	private TimeSeries getSeries(String column, String dataName, boolean average) {
+	private TimeSeries getSeries(String col, String dataName, boolean average) {
 		TimeSeries series = new TimeSeries(dataName);
 		int pref = sharedPrefs.getInt("graphFrequency", 3);
 		Log.i(TAG, "Pref is: "+pref);
 		int bars = 12; // FIXME load from settings
+		String[] column = {col};
 		
 		if (pref == DAILY) {
 			DateMidnight endDate = new DateMidnight();
@@ -199,7 +198,7 @@ public class OverviewActivity extends Activity {
 			
 			for (int i=0; i < bars; i++) {
 				double total = 0;
-				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				Cursor data = dbHelper.getLastData(startDate.toString(PATTERN), endDate.toString(PATTERN), column);
 				total = calculateData(data, average);
 
 				series.add(startDate.getDayOfMonth(), total);
@@ -216,7 +215,7 @@ public class OverviewActivity extends Activity {
 			
 			for (int i=0; i < bars; i++) {
 				double total = 0;
-				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				Cursor data = dbHelper.getLastData(startDate.toString(PATTERN), endDate.toString(PATTERN), column);
 				total = calculateData(data, average);
 
 				series.add(startDate.getHourOfDay(), total);
@@ -233,7 +232,7 @@ public class OverviewActivity extends Activity {
 			
 			for (int i=0; i < bars; i++) {
 				double total = 0;
-				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				Cursor data = dbHelper.getLastData(startDate.toString(PATTERN), endDate.toString(PATTERN), column);
 				total = calculateData(data, average);
 
 				series.add(startDate.getWeekOfWeekyear(), total);
@@ -250,7 +249,7 @@ public class OverviewActivity extends Activity {
 			
 			for (int i=0; i < bars; i++) {
 				double total = 0;
-				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
+				Cursor data = dbHelper.getLastData(startDate.toString(PATTERN), endDate.toString(PATTERN), column);
 				total = calculateData(data, average);
 
 				series.add(startDate.getMonthOfYear(), total);
