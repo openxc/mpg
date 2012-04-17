@@ -128,7 +128,6 @@ public class OpenXCTestActivity extends Activity {
 			Log.i(TAG, "Recreated graph");
 
 			mStartTime = savedInstanceState.getLong("time");
-			mIsRecording = savedInstanceState.getBoolean("isRecording");
 		}
 
 		mSpeedRenderer.setXTitle("Time (ms)");
