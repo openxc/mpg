@@ -57,7 +57,6 @@ public class OpenXCTestActivity extends Activity {
 	private final static int CAN_TIMEOUT = 30;
 	private final static int OPTIMAL_SPEED = 97;
 
-	private boolean isBound = false;
 	private boolean mIsRecording = false;
 
 	private boolean scrollGraph = true;
@@ -129,6 +128,7 @@ public class OpenXCTestActivity extends Activity {
 			Log.i(TAG, "Recreated graph");
 
 			mStartTime = savedInstanceState.getLong("time");
+			mIsRecording = savedInstanceState.getBoolean("isRecording");
 		}
 
 		mSpeedRenderer.setXTitle("Time (ms)");
@@ -172,6 +172,7 @@ public class OpenXCTestActivity extends Activity {
 		outState.putDoubleArray("gasX", gasX);
 		outState.putDoubleArray("gasY", gasY);
 		outState.putLong("time", mStartTime);
+		outState.putBoolean("isRecording", mIsRecording);
 	}
 
 	private double[] convertToArray(XYSeries series, String type) {
@@ -254,7 +255,6 @@ public class OpenXCTestActivity extends Activity {
 		public void onServiceDisconnected(ComponentName name) {
 			vehicleService = null;
 			Log.i(TAG, "Service unbound");
-			isBound = false;
 		}
 
 		@Override
@@ -291,7 +291,6 @@ public class OpenXCTestActivity extends Activity {
 				e.printStackTrace();
 			}
 
-			isBound = true;
 		}
 	};
 
@@ -413,9 +412,6 @@ public class OpenXCTestActivity extends Activity {
 
 		double diff = temp - lastUsageCount;
 		lastUsageCount = temp;
-		if (diff > 1) { // catch bogus values FIXME
-			diff = 0;
-		}
 
 		return diff;
 	}
@@ -459,6 +455,8 @@ public class OpenXCTestActivity extends Activity {
         stopMeasurementUpdater();
         mMeasurementUpdater = new MeasurementUpdater();
         mMeasurementUpdater.start();
+        
+        mIsRecording = true;
     }
 
     private void stopMeasurementUpdater() {
@@ -467,6 +465,8 @@ public class OpenXCTestActivity extends Activity {
         }
 
         mMeasurementUpdater = null;
+        
+        mIsRecording = false;
     }
 
 	private long getTime() {
