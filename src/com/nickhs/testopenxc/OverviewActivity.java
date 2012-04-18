@@ -38,9 +38,9 @@ public class OverviewActivity extends Activity {
 	TextView yesterGas;
 	TextView lastMileage;
 	TextView previousMileage;
-	
+
 	SharedPreferences sharedPrefs;
-	
+
 	int TRIPLY = 0;
 	int HOURLY = 1;
 	int DAILY = 2;
@@ -59,7 +59,7 @@ public class OverviewActivity extends Activity {
 		yesterGas = (TextView) findViewById(R.id.lastUsage);
 		lastMileage = (TextView) findViewById(R.id.lastTrip);
 		previousMileage = (TextView) findViewById(R.id.previousTrip);
-		
+
 		sharedPrefs = getPreferences(MODE_PRIVATE);
 		sharedPrefs.registerOnSharedPreferenceChangeListener(prefListener);
 
@@ -68,7 +68,7 @@ public class OverviewActivity extends Activity {
 		drawTopRight();
 		drawBottomRight();
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
@@ -85,7 +85,7 @@ public class OverviewActivity extends Activity {
 					editor.commit();
 				}
 			});
-			
+
 			AlertDialog alert = builder.create();
 			alert.show();
 			break;
@@ -99,7 +99,7 @@ public class OverviewActivity extends Activity {
 		inflater.inflate(R.menu.overviewmenu, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
-	
+
 	public OnSharedPreferenceChangeListener prefListener = new OnSharedPreferenceChangeListener() {
 		@Override
 		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
@@ -167,7 +167,7 @@ public class OverviewActivity extends Activity {
 
 		XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
 		XYSeriesRenderer srend = new XYSeriesRenderer();
-		srend.setColor(Color.parseColor("#FFBB33")); 
+		srend.setColor(Color.parseColor("#FFBB33"));
 		renderer.addSeriesRenderer(srend);
 
 		renderer.setShowLegend(false);
@@ -192,69 +192,69 @@ public class OverviewActivity extends Activity {
 		int pref = sharedPrefs.getInt("graphFrequency", 3);
 		Log.i(TAG, "Pref is: "+pref);
 		int bars = 12; // FIXME load from settings
-		
+
 		if (pref == DAILY) {
 			DateMidnight endDate = new DateMidnight();
 			DateMidnight startDate = endDate.minusDays(1);
-			
+
 			for (int i=0; i < bars; i++) {
 				double total = 0;
 				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
 				total = calculateData(data, average);
 
 				series.add(startDate.getDayOfMonth(), total);
-				
+
 				endDate = endDate.minusDays(1);
 				startDate = startDate.minusDays(1);
 			}
 		}
-		
+
 		else if (pref == HOURLY) {
 			DateTime endDate = new DateTime();
 			endDate = endDate.minusMinutes(endDate.getMinuteOfHour());
 			DateTime startDate = endDate.minusHours(1);
-			
+
 			for (int i=0; i < bars; i++) {
 				double total = 0;
 				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
 				total = calculateData(data, average);
 
 				series.add(startDate.getHourOfDay(), total);
-				
+
 				endDate = endDate.minusHours(1);
 				startDate = startDate.minusHours(1);
 			}
 		}
-		
+
 		else if (pref == WEEKLY) {
 			DateMidnight endDate = new DateMidnight();
 			endDate = endDate.minusDays(endDate.getDayOfWeek());
 			DateMidnight startDate = endDate.minusDays(7);
-			
+
 			for (int i=0; i < bars; i++) {
 				double total = 0;
 				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
 				total = calculateData(data, average);
 
 				series.add(startDate.getWeekOfWeekyear(), total);
-				
+
 				endDate = endDate.minusDays(7);
 				startDate = startDate.minusDays(7);
 			}
 		}
-		
+
 		else if (pref == MONTHLY) {
 			DateMidnight endDate = new DateMidnight();
 			endDate = endDate.minusDays(endDate.getDayOfMonth());
 			DateMidnight startDate = endDate.minusMonths(1);
-			
+
 			for (int i=0; i < bars; i++) {
 				double total = 0;
 				Cursor data = dbHelper.getLastData(startDate.toString(pattern), endDate.toString(pattern), column);
 				total = calculateData(data, average);
 
 				series.add(startDate.getMonthOfYear(), total);
-				
+
 				endDate = endDate.minusMonths(1);
 				startDate = startDate.minusMonths(1);
 			}
@@ -262,43 +262,44 @@ public class OverviewActivity extends Activity {
 
 		else if (pref == TRIPLY) {
 			Cursor data = dbHelper.getLastData(bars, column);
-			data.moveToLast();
-			for (int i=1; i < bars+1; i++) {
-				series.add(i, data.getDouble(0));
-				data.moveToPrevious();
-			}
-			data.close();
+			if(data.moveToLast()) {
+                for (int i=1; i < bars+1; i++) {
+                    series.add(i, data.getDouble(0));
+                    data.moveToPrevious();
+                }
+                data.close();
+            }
 		}
-		
+
 		else {
 			Log.e(TAG, "Invalid value! "+pref);
 		}
-		
+
 		return series;
 	}
 
 	private double calculateData(Cursor data, boolean average) {
 		double total = 0;
-		data.moveToFirst();
+        if(data.moveToFirst()) {
+            for (int x=0; x < data.getCount(); x++) {
+                double fuel = data.getDouble(0);
+                if (average) {
+                    double tempAvg = total;
+                    double tempTotal = tempAvg * x;
+                    tempTotal += fuel;
+                    tempAvg = tempTotal/(x+1);
+                    total = tempAvg;
+                }
 
-		for (int x=0; x < data.getCount(); x++) {
-			double fuel = data.getDouble(0);
-			if (average) {
-				double tempAvg = total;
-				double tempTotal = tempAvg * x;
-				tempTotal += fuel;
-				tempAvg = tempTotal/(x+1);
-				total = tempAvg;
-			}
+                else {
+                    total += fuel;
+                }
 
-			else {
-				total += fuel;
-			}
+                data.moveToNext();
+            }
 
-			data.moveToNext();
-		}
-
-		data.close();
+            data.close();
+        }
 		return total;
 	}
 }
