@@ -263,7 +263,7 @@ public class OverviewActivity extends Activity {
 		else if (pref == TRIPLY) {
 			Cursor data = dbHelper.getLastData(bars, column);
 			if(data.moveToLast()) {
-                for (int i=1; i < bars+1; i++) {
+                for (int i=1; i < data.getCount(); i++) {
                     series.add(i, data.getDouble(0));
                     data.moveToPrevious();
                 }
