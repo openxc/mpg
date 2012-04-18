@@ -83,6 +83,7 @@ public class MileageActivity extends Activity {
 		rend.setPointStyle(PointStyle.SQUARE);
 		rend.setFillPoints(true);
 		rend.setLineWidth(Float.MIN_NORMAL);
+		rend.setColor(Color.parseColor("#FFBB33"));
 		mRenderer.addSeriesRenderer(rend);
 		chart = ChartFactory.getTimeChartView(this, dataset, mRenderer, null);
 		mRenderer.setClickEnabled(true);
