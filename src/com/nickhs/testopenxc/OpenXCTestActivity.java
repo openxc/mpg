@@ -32,19 +32,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.openxc.VehicleService;
-import com.openxc.VehicleService.VehicleServiceBinder;
+import com.openxc.VehicleManager;
+import com.openxc.VehicleManager.VehicleBinder;
 import com.openxc.measurements.FineOdometer;
 import com.openxc.measurements.FuelConsumed;
 import com.openxc.measurements.IgnitionStatus;
 import com.openxc.measurements.IgnitionStatus.IgnitionPosition;
 import com.openxc.measurements.UnrecognizedMeasurementTypeException;
-import com.openxc.measurements.VehicleMeasurement;
+import com.openxc.measurements.MeasurementInterface;
 import com.openxc.measurements.VehicleSpeed;
-import com.openxc.remote.NoValueException;
-import com.openxc.remote.RemoteVehicleServiceException;
-import com.openxc.remote.sources.trace.TraceVehicleDataSource;
-import com.openxc.remote.sources.usb.UsbVehicleDataSource;
+import com.openxc.NoValueException;
+import com.openxc.remote.VehicleServiceException;
+import com.openxc.sources.trace.TraceVehicleDataSource;
+import com.openxc.sources.usb.UsbVehicleDataSource;
+import com.openxc.sources.DataSourceException;
+
+import java.net.URI;
 
 /* TODO: Send the range into a sharedpreferences.
  * Check on how many points before we die
@@ -76,7 +79,7 @@ public class OpenXCTestActivity extends Activity {
 	private ToggleButton scroll;
 	private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
-	private VehicleService vehicleService;
+	private VehicleManager vehicle;
 	private DbHelper dbHelper;
     private MeasurementUpdater mMeasurementUpdater;
 
@@ -103,7 +106,7 @@ public class OpenXCTestActivity extends Activity {
 		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		sharedPrefs.registerOnSharedPreferenceChangeListener(prefListener);
 
-		Intent intent = new Intent(this, VehicleService.class);
+		Intent intent = new Intent(this, VehicleManager.class);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
 		dbHelper = new DbHelper(this);
@@ -201,8 +204,8 @@ public class OpenXCTestActivity extends Activity {
 		Log.i(TAG, "onDestroy called");
         stopMeasurementUpdater();
         try {
-            vehicleService.removeListener(IgnitionStatus.class, ignitionListener);
-        } catch(RemoteVehicleServiceException e) {
+            vehicle.removeListener(IgnitionStatus.class, ignitionListener);
+        } catch(VehicleServiceException e) {
             Log.w(TAG, "Unable to remove ignition listener", e);
         }
 	}
@@ -252,39 +255,42 @@ public class OpenXCTestActivity extends Activity {
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-			vehicleService = null;
+			vehicle = null;
 			Log.i(TAG, "Service unbound");
 		}
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			VehicleServiceBinder binder = (VehicleServiceBinder) service;
-			vehicleService = binder.getService();
+			VehicleBinder binder = (VehicleBinder) service;
+			vehicle = binder.getService();
 			Log.i(TAG, "Remote Vehicle Service bound");
 
 			Log.i(TAG, "Trace file is: "+sharedPrefs.getBoolean("use_trace_file", true));
 			if (sharedPrefs.getBoolean("use_trace_file", false)) {
 				Log.i(TAG, "Using trace file");
 				try {
-					vehicleService.setDataSource(TraceVehicleDataSource.class.getName(), "file:///sdcard/drivingnew");
-				} catch (RemoteVehicleServiceException e) {
+					vehicle.addSource(new TraceVehicleDataSource(
+                                OpenXCTestActivity.this,
+                                new URI("file:///sdcard/drivingnew")));
+				} catch (java.net.URISyntaxException e) {
 					Log.e(TAG, e.getMessage());
 					e.printStackTrace();
-				}
-			}
-
-			else {
+				} catch(DataSourceException e) {
+					Log.e(TAG, e.getMessage());
+					e.printStackTrace();
+                }
+			} else {
 				try {
-					vehicleService.setDataSource(UsbVehicleDataSource.class.getName(), null);
-				} catch (RemoteVehicleServiceException e) {
+					vehicle.initializeDefaultSources();
+				} catch (VehicleServiceException e) {
 					Log.e(TAG, e.getMessage());
 					e.printStackTrace();
 				}
 			}
 
 			try {
-				vehicleService.addListener(IgnitionStatus.class, ignitionListener);
-			} catch (RemoteVehicleServiceException e) {
+				vehicle.addListener(IgnitionStatus.class, ignitionListener);
+			} catch (VehicleServiceException e) {
 				e.printStackTrace();
 			} catch (UnrecognizedMeasurementTypeException e) {
 				e.printStackTrace();
@@ -317,7 +323,7 @@ public class OpenXCTestActivity extends Activity {
 
 	IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
 		@Override
-		public void receive(VehicleMeasurement arg0) {
+		public void receive(MeasurementInterface arg0) {
 			IgnitionPosition ignitionPosition =
 					((IgnitionStatus) arg0).getValue().enumValue();
             if(ignitionPosition == IgnitionPosition.RUN ||
@@ -387,7 +393,7 @@ public class OpenXCTestActivity extends Activity {
 		VehicleSpeed speed;
 		double temp = -1;
 		try {
-			speed = (VehicleSpeed) vehicleService.get(VehicleSpeed.class);
+			speed = (VehicleSpeed) vehicle.get(VehicleSpeed.class);
 			temp = speed.getValue().doubleValue();
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
@@ -401,7 +407,7 @@ public class OpenXCTestActivity extends Activity {
 		FuelConsumed fuel;
 		double temp = 0;
 		try {
-			fuel = (FuelConsumed) vehicleService.get(FuelConsumed.class);
+			fuel = (FuelConsumed) vehicle.get(FuelConsumed.class);
 			temp = fuel.getValue().doubleValue();
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
@@ -418,7 +424,7 @@ public class OpenXCTestActivity extends Activity {
 	private boolean checkForCANFresh() {
 		boolean ret = false;
 		try {
-			VehicleSpeed measurement = (VehicleSpeed) vehicleService.get(VehicleSpeed.class);
+			VehicleSpeed measurement = (VehicleSpeed) vehicle.get(VehicleSpeed.class);
 			if (measurement.getAge() < CAN_TIMEOUT) ret = true;
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
@@ -454,7 +460,7 @@ public class OpenXCTestActivity extends Activity {
         stopMeasurementUpdater();
         mMeasurementUpdater = new MeasurementUpdater();
         mMeasurementUpdater.start();
-        
+
         mIsRecording = true;
     }
 
@@ -464,7 +470,6 @@ public class OpenXCTestActivity extends Activity {
         }
 
         mMeasurementUpdater = null;
-        
         mIsRecording = false;
     }
 
@@ -501,9 +506,9 @@ public class OpenXCTestActivity extends Activity {
         stopMeasurementUpdater();
 
 		try {
-			FineOdometer oMeas = (FineOdometer) vehicleService.get(FineOdometer.class);
+			FineOdometer oMeas = (FineOdometer) vehicle.get(FineOdometer.class);
 			final double distanceTravelled = oMeas.getValue().doubleValue();
-			FuelConsumed fMeas = (FuelConsumed) vehicleService.get(FuelConsumed.class);
+			FuelConsumed fMeas = (FuelConsumed) vehicle.get(FuelConsumed.class);
 			final double fuelConsumed = fMeas.getValue().doubleValue();
 			final double gasMileage = distanceTravelled/fuelConsumed;
 			double endTime = getTime();
