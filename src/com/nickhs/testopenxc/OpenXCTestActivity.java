@@ -39,7 +39,7 @@ import com.openxc.measurements.FuelConsumed;
 import com.openxc.measurements.IgnitionStatus;
 import com.openxc.measurements.IgnitionStatus.IgnitionPosition;
 import com.openxc.measurements.UnrecognizedMeasurementTypeException;
-import com.openxc.measurements.MeasurementInterface;
+import com.openxc.measurements.Measurement;
 import com.openxc.measurements.VehicleSpeed;
 import com.openxc.NoValueException;
 import com.openxc.remote.VehicleServiceException;
@@ -323,7 +323,7 @@ public class OpenXCTestActivity extends Activity {
 
 	IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
 		@Override
-		public void receive(MeasurementInterface arg0) {
+		public void receive(Measurement arg0) {
 			IgnitionPosition ignitionPosition =
 					((IgnitionStatus) arg0).getValue().enumValue();
             if(ignitionPosition == IgnitionPosition.RUN ||
