@@ -65,17 +65,21 @@ public class OpenXCTestActivity extends Activity {
 	private boolean scrollGraph = true;
 
 	private long mStartTime = -1;
-	private double lastUsageCount = 0;
+	private double lastGasCount = 0;
+	private double lastOdoCount = 0;
 
 	private XYMultipleSeriesRenderer mSpeedRenderer = new XYMultipleSeriesRenderer();
-	private XYMultipleSeriesRenderer mGasRenderer = new XYMultipleSeriesRenderer();
+	private XYMultipleSeriesRenderer mMPGRenderer = new XYMultipleSeriesRenderer();
+	//private XYMultipleSeriesRenderer mGasRenderer = new XYMultipleSeriesRenderer();
 	private XYSeries speedSeries = new XYSeries("Speed");
-	private XYSeries gasSeries = new XYSeries("Gas Consumed"); // FIXME strings should be hardcoded
+	private XYSeries mpgSeries = new XYSeries("MPG");
+	//private XYSeries gasSeries = new XYSeries("Gas Consumed"); // FIXME strings should be hardcoded
 	private GraphicalView mSpeedChartView;
-	private GraphicalView mGasChartView;
+	private GraphicalView mMPGChartView;
+	//private GraphicalView mGasChartView;
 
-	private TextView speed;
-	private TextView mpg;
+	private TextView distance;
+	private TextView fuel;
 	private ToggleButton scroll;
 	private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
@@ -89,8 +93,10 @@ public class OpenXCTestActivity extends Activity {
 		setContentView(R.layout.main);
 		Log.i(TAG, "onCreated");
 
-		speed = (TextView) findViewById(R.id.textSpeed);
-		mpg = (TextView) findViewById(R.id.textMPG);
+//		speed = (TextView) findViewById(R.id.textSpeed);
+//		mpg = (TextView) findViewById(R.id.textMPG);
+		distance = (TextView) findViewById(R.id.textDistance);
+		fuel = (TextView) findViewById(R.id.textFuel);
 		scroll = (ToggleButton) findViewById(R.id.toggleButton1);
 		scroll.setChecked(scrollGraph);
 		scroll.setOnClickListener(new OnClickListener() {
@@ -99,7 +105,8 @@ public class OpenXCTestActivity extends Activity {
 				scrollGraph = !scrollGraph;
 				scroll.setChecked(scrollGraph);
 				mSpeedRenderer.setYAxisMin(0);
-				mGasRenderer.setYAxisMin(0);
+				mMPGRenderer.setYAxisMin(0);
+				//mGasRenderer.setYAxisMin(0);
 			}
 		});
 
@@ -111,8 +118,9 @@ public class OpenXCTestActivity extends Activity {
 
 		dbHelper = new DbHelper(this);
 
-		XYMultipleSeriesDataset gDataset = initGraph(mGasRenderer, gasSeries);
+		//XYMultipleSeriesDataset gDataset = initGraph(mGasRenderer, gasSeries);
 		XYMultipleSeriesDataset sDataset = initGraph(mSpeedRenderer, speedSeries);
+		XYMultipleSeriesDataset mDataset = initGraph(mMPGRenderer, mpgSeries);
 
 
 		if (savedInstanceState != null) {
@@ -121,58 +129,77 @@ public class OpenXCTestActivity extends Activity {
 			for (int i = 0; i < speedX.length; i++) {
 				speedSeries.add(speedX[i], speedY[i]);
 			}
-
-			double[] gasX = savedInstanceState.getDoubleArray("gasX");
-			double[] gasY = savedInstanceState.getDoubleArray("gasY");
-			for (int i = 0; i < gasX.length; i++) {
-				gasSeries.add(gasX[i], gasY[i]);
+			
+			double[] mpgX = savedInstanceState.getDoubleArray("mpgX");
+			double[] mpgY = savedInstanceState.getDoubleArray("mpgY");
+			for (int i = 0; i < mpgX.length; i++) {
+				mpgSeries.add(mpgX[i], mpgY[i]);
 			}
+
+//			double[] gasX = savedInstanceState.getDoubleArray("gasX");
+//			double[] gasY = savedInstanceState.getDoubleArray("gasY");
+//			for (int i = 0; i < gasX.length; i++) {
+//				gasSeries.add(gasX[i], gasY[i]);
+//			}
 
 			Log.i(TAG, "Recreated graph");
 
 			mStartTime = savedInstanceState.getLong("time");
 		}
 
-		mSpeedRenderer.setXTitle("Time (ms)");
-		mSpeedRenderer.setYTitle("Speed (km/h)");
+		mSpeedRenderer.setXTitle("Time");
+		mSpeedRenderer.setYTitle("Speed (mph)");
 
-		mGasRenderer.setXTitle("Time (ms)");
-		mGasRenderer.setYTitle("Fuel Usage (litres)");
+		mMPGRenderer.setXTitle("Time");
+		mMPGRenderer.setYTitle("Miles per Gallon");
+		
+//		mGasRenderer.setXTitle("Time");
+//		mGasRenderer.setYTitle("Fuel Usage (litres)");
 
-		XYSeries optimalSpeed = new XYSeries("Optimal Speed"); //TODO String should be referenced from strings.xml
-		optimalSpeed.add(0, OPTIMAL_SPEED); optimalSpeed.add(Integer.MAX_VALUE, OPTIMAL_SPEED);
-		sDataset.addSeries(optimalSpeed);
-		mSpeedRenderer.addSeriesRenderer(1, new XYSeriesRenderer());
+//		XYSeries optimalSpeed = new XYSeries("Optimal Speed"); //TODO String should be referenced from strings.xml
+//		optimalSpeed.add(0, OPTIMAL_SPEED); optimalSpeed.add(Integer.MAX_VALUE, OPTIMAL_SPEED);
+//		sDataset.addSeries(optimalSpeed);
+//		mSpeedRenderer.addSeriesRenderer(1, new XYSeriesRenderer());
 
 		mSpeedRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
-		mGasRenderer.setRange(new double[] {0, 50000, 0, 0.03});
+		mMPGRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
+		//mGasRenderer.setRange(new double[] {0, 50000, 0, 0.03});
 
 		FrameLayout topLayout = (FrameLayout) findViewById(R.id.topChart);
 		FrameLayout botLayout = (FrameLayout) findViewById(R.id.botChart);
 
 		mSpeedChartView = ChartFactory.getTimeChartView(this, sDataset, mSpeedRenderer, null);
 		mSpeedChartView.addPanListener(panListener);
-		topLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		botLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		
+		mMPGChartView = ChartFactory.getTimeChartView(this, mDataset, mMPGRenderer, null);
+		mMPGChartView.addPanListener(panListener);
+		topLayout.addView(mMPGChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 
-		mGasChartView = ChartFactory.getTimeChartView(this, gDataset, mGasRenderer, null);
-		mGasChartView.addPanListener(panListener);
-		botLayout.addView(mGasChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+//		mGasChartView = ChartFactory.getTimeChartView(this, gDataset, mGasRenderer, null);
+//		mGasChartView.addPanListener(panListener);
+//		botLayout.addView(mGasChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		Log.i(TAG, "onSaveInstanceState");
-		outState.putInt("count", speedSeries.getItemCount());
+		outState.putInt("count", mpgSeries.getItemCount());
 		double[] speedX = convertToArray(speedSeries, "x");
 		double[] speedY = convertToArray(speedSeries, "y");
-		double[] gasX = convertToArray(gasSeries, "x");
-		double[] gasY = convertToArray(gasSeries, "y");
+		double[] mpgX = convertToArray(mpgSeries, "x");
+		double[] mpgY = convertToArray(mpgSeries, "y");
+//		double[] gasX = convertToArray(gasSeries, "x");
+//		double[] gasY = convertToArray(gasSeries, "y");
 
 		outState.putDoubleArray("speedX", speedX);
 		outState.putDoubleArray("speedY", speedY);
-		outState.putDoubleArray("gasX", gasX);
-		outState.putDoubleArray("gasY", gasY);
+		outState.putDoubleArray("mpgX", mpgX);
+		outState.putDoubleArray("mpgY", mpgY);
+
+//		outState.putDoubleArray("gasX", gasX);
+//		outState.putDoubleArray("gasY", gasY);
 		outState.putLong("time", mStartTime);
 		outState.putBoolean("isRecording", mIsRecording);
 	}
@@ -345,24 +372,33 @@ public class OpenXCTestActivity extends Activity {
 		}
 	};
 
-	private void drawGraph(double time, double speed, double gas) {
+	private void drawGraph(double time, double mpg, double speed) {
 		speedSeries.add(time, speed);
-		gasSeries.add(time, gas);
+		mpgSeries.add(time, mpg);
+//		gasSeries.add(time, gas);
 		if (scrollGraph) {
 			if (time > 50000) { // FIXME should be a preference
                 String choice = sharedPrefs.getString("update_interval", "1000");
                 int pollFrequency = Integer.parseInt(choice);
-				double max = speedSeries.getMaxX();
+                double max = mpgSeries.getMaxX();
 				mSpeedRenderer.setXAxisMax(max + pollFrequency);
 				mSpeedRenderer.setXAxisMin(max-50000); //FIXME
-				mGasRenderer.setXAxisMax(max + pollFrequency);
-				mGasRenderer.setXAxisMin(max - 50000);
+                mMPGRenderer.setXAxisMax(max + pollFrequency);
+				mMPGRenderer.setXAxisMin(max-50000); //FIXME
+//				mGasRenderer.setXAxisMax(max + pollFrequency);
+//				mGasRenderer.setXAxisMin(max - 50000);
 			}
 		}
-		if (mSpeedChartView != null) {
+//		if (mSpeedChartView != null) {
+//			mSpeedChartView.repaint();
+//			mGasChartView.repaint();
+//		}
+		
+		if (mMPGChartView != null) {
+			mMPGChartView.repaint();
 			mSpeedChartView.repaint();
-			mGasChartView.repaint();
 		}
+
 	}
 
     private class MeasurementUpdater extends Thread {
@@ -402,6 +438,21 @@ public class OpenXCTestActivity extends Activity {
 		}
 		return temp;
 	}
+    
+	private double getFineOdometer() {
+		FineOdometer fineOdo;
+		double temp = -1;
+		try {
+			fineOdo = (FineOdometer) vehicle.get(FineOdometer.class);
+			temp = fineOdo.getValue().doubleValue();
+		} catch (UnrecognizedMeasurementTypeException e) {
+			e.printStackTrace();
+		} catch (NoValueException e) {
+			Log.w(TAG, "Failed to get fine odometer measurement");
+		}
+		
+		return temp;
+	}
 
 	private double getGasConsumed() {
 		FuelConsumed fuel;
@@ -415,10 +466,7 @@ public class OpenXCTestActivity extends Activity {
 			Log.w(TAG, "Failed to get fuel measurement");
 		}
 
-		double diff = temp - lastUsageCount;
-		lastUsageCount = temp;
-
-		return diff;
+		return temp;
 	}
 
 	private boolean checkForCANFresh() {
@@ -437,23 +485,54 @@ public class OpenXCTestActivity extends Activity {
 	private void getMeasurements() {
 
 		double speedm = getSpeed();
+		double fineOdo = getFineOdometer();
 		double gas = getGasConsumed();
+		
+		speedm *= 0.62137;  //Converting from kph to mph
+		fineOdo *= 0.62137; //Converting from km to miles.
+		gas *= 0.26417;  //Converting from L to Gal
 
-		final String temp = Double.toString(speedm);
-		speed.post(new Runnable() {
+//		final String temp = Double.toString(speedm);
+//		speed.post(new Runnable() {
+//			public void run() {
+//				speed.setText(temp);
+//			}
+//		});
+		
+//		final double usage = gas;
+//		mpg.post(new Runnable() {
+//			public void run() {
+//				mpg.setText(Double.toString(usage));
+//			}
+//		});
+		
+		final String temp = Double.toString(fineOdo);
+		distance.post(new Runnable() {
 			public void run() {
-				speed.setText(temp);
+				distance.setText(temp);
 			}
 		});
 
 		final double usage = gas;
-		mpg.post(new Runnable() {
+		fuel.post(new Runnable() {
 			public void run() {
-				mpg.setText(Double.toString(usage));
+				fuel.setText(Double.toString(usage));
 			}
 		});
+		
+		double CurrentGas = gas - lastGasCount;
+		lastGasCount = gas;
+		double CurrentDist = fineOdo - lastOdoCount;
+		lastOdoCount = fineOdo;
+		
+		if(gas > 0.0) {
+			double mpg = CurrentDist / CurrentGas;  //miles per hour
+			drawGraph(getTime(), mpg, speedm);
+		} else {
+			drawGraph(getTime(), 0.0, speedm);
+		}
 
-		drawGraph(getTime(), speedm, gas);
+//		drawGraph(getTime(), speedm, gas);
 	}
 
     private void startMeasurementUpdater() {
@@ -514,7 +593,7 @@ public class OpenXCTestActivity extends Activity {
 			double endTime = getTime();
 			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, mStartTime, endTime);
 
-			startActivity(new Intent(this, OverviewActivity.class));
+			//startActivity(new Intent(this, OverviewActivity.class));
             stopMeasurementUpdater();
 
 			runOnUiThread(new Runnable() {

@@ -20,11 +20,11 @@
                 android:id="@+id/labelSpeed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/lSpeed"
+                android:text="@string/labelDistance"
                 android:textSize="12sp" />
 
             <TextView
-                android:id="@+id/textSpeed"
+                android:id="@+id/textDistance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/tSpeed"
@@ -43,11 +43,11 @@
                 android:id="@+id/labelMPG"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/lMPG"
-				android:textSize="12sp" />
+                android:text="@string/labelGas"
+                android:textSize="12sp" />
 				
             <TextView
-                android:id="@+id/textMPG"
+                android:id="@+id/textFuel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/tMPG"
