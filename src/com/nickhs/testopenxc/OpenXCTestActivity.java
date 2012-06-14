@@ -165,16 +165,28 @@ public class OpenXCTestActivity extends Activity {
 		mMPGRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
 		//mGasRenderer.setRange(new double[] {0, 50000, 0, 0.03});
 
-		FrameLayout topLayout = (FrameLayout) findViewById(R.id.topChart);
-		FrameLayout botLayout = (FrameLayout) findViewById(R.id.botChart);
+		final FrameLayout topLayout = (FrameLayout) findViewById(R.id.topChart);
+		//FrameLayout botLayout = (FrameLayout) findViewById(R.id.botChart);
 
 		mSpeedChartView = ChartFactory.getTimeChartView(this, sDataset, mSpeedRenderer, null);
 		mSpeedChartView.addPanListener(panListener);
-		botLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		//botLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		mSpeedChartView.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				topLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+			}
+		});
 		
 		mMPGChartView = ChartFactory.getTimeChartView(this, mDataset, mMPGRenderer, null);
 		mMPGChartView.addPanListener(panListener);
 		topLayout.addView(mMPGChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		mMPGChartView.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				topLayout.addView(mMPGChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+			}
+		});
 
 //		mGasChartView = ChartFactory.getTimeChartView(this, gDataset, mGasRenderer, null);
 //		mGasChartView.addPanListener(panListener);
