@@ -58,10 +58,12 @@ public class ChartFragment extends Fragment {
     }
 
     protected void restoreState(Bundle savedInstanceState) {
-        double[] x = savedInstanceState.getDoubleArray("x");
-        double[] y = savedInstanceState.getDoubleArray("y");
-        for (int i = 0; i < x.length; i++) {
-            mSeries.add(x[i], y[i]);
+        if(mSeries != null) {
+            double[] x = savedInstanceState.getDoubleArray("x");
+            double[] y = savedInstanceState.getDoubleArray("y");
+            for (int i = 0; i < x.length; i++) {
+                mSeries.add(x[i], y[i]);
+            }
         }
     }
 
