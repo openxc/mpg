@@ -1,4 +1,4 @@
-package com.nickhs.testopenxc;
+package com.ford.openxc.mpg;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

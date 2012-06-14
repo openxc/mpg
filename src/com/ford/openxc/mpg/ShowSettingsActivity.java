@@ -1,4 +1,4 @@
-package com.nickhs.testopenxc;
+package com.ford.openxc.mpg;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
