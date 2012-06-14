@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -58,7 +59,7 @@ import java.net.URI;
 public class OpenXCTestActivity extends Activity {
 	private final static String TAG = "OpenXCTestActivity";
 	private final static int CAN_TIMEOUT = 30;
-	private final static int OPTIMAL_SPEED = 97;
+	//private final static int OPTIMAL_SPEED = 97;
 
 	private boolean mIsRecording = false;
 
@@ -91,6 +92,7 @@ public class OpenXCTestActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
 		Log.i(TAG, "onCreated");
 
 //		speed = (TextView) findViewById(R.id.textSpeed);
@@ -165,32 +167,38 @@ public class OpenXCTestActivity extends Activity {
 		mMPGRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
 		//mGasRenderer.setRange(new double[] {0, 50000, 0, 0.03});
 
-		final FrameLayout topLayout = (FrameLayout) findViewById(R.id.topChart);
-		//FrameLayout botLayout = (FrameLayout) findViewById(R.id.botChart);
+		FrameLayout topLayout = (FrameLayout) findViewById(R.id.topChart);
+		FrameLayout botLayout = (FrameLayout) findViewById(R.id.botChart);
 
 		mSpeedChartView = ChartFactory.getTimeChartView(this, sDataset, mSpeedRenderer, null);
 		mSpeedChartView.addPanListener(panListener);
-		//botLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		mSpeedChartView.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				topLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-			}
-		});
+		botLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 		
 		mMPGChartView = ChartFactory.getTimeChartView(this, mDataset, mMPGRenderer, null);
 		mMPGChartView.addPanListener(panListener);
 		topLayout.addView(mMPGChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		mMPGChartView.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				topLayout.addView(mMPGChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-			}
-		});
 
 //		mGasChartView = ChartFactory.getTimeChartView(this, gDataset, mGasRenderer, null);
 //		mGasChartView.addPanListener(panListener);
 //		botLayout.addView(mGasChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		
+		TabHost tabs = (TabHost)findViewById(R.id.TabHost01);
+
+        tabs.setup();
+
+        TabHost.TabSpec spec1 = tabs.newTabSpec("tag1");
+
+        spec1.setContent(R.id.topChart);
+        spec1.setIndicator("Miles per Gallon");
+
+        tabs.addTab(spec1);
+
+        TabHost.TabSpec spec2 = tabs.newTabSpec("tag2");
+        spec2.setContent(R.id.botChart);
+        spec2.setIndicator("Speed");
+
+        tabs.addTab(spec2);
+
 	}
 
 	@Override
