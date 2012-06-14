@@ -55,9 +55,10 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
 	private boolean mIsRecording = false;
 
 	private long mStartTime = -1;
-	private double lastGasCount = 0;
-	private double lastOdoCount = 0;
-	private double lastMPG = 0;
+	private double mLastGasCount = 0;
+	private double mLastOdoCount = 0;
+	private double mLastMPG = 0;
+	private double mLastSpeed = 0;
 
 	private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
@@ -151,9 +152,17 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
     			return true;
     		} else if (ev.getKeyCode() == KeyEvent.KEYCODE_5) {
     			if(TTSReady) {
-    				long roundedMPG = Math.round(lastMPG);
-    				String strMPG = roundedMPG + "miles per gallon";
-    				mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+    				int CurrentChart = mViewPager.getCurrentItem();
+    				if(CurrentChart == 0){
+    					long roundedSpeed = Math.round(mLastSpeed);
+        				String strMPG = roundedSpeed + "miles per hour";
+        				mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+    				} else {
+    					
+        				long roundedMPG = Math.round(mLastMPG);
+        				String strMPG = roundedMPG + "miles per gallon";
+        				mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+    				}
     			} else {
     				Log.e(TAG, "Text to speech called before initialized.");
     			}
@@ -483,17 +492,18 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
 		double gas = getGasConsumed();
 
 		speedm *= 0.62137;  //Converting from kph to mph
+		mLastSpeed = speedm;
 		fineOdo *= 0.62137; //Converting from km to miles.
 		gas *= 0.26417;  //Converting from L to Gal
 
-		double currentGas = gas - lastGasCount;
-		lastGasCount = gas;
-		double currentDistance = fineOdo - lastOdoCount;
-		lastOdoCount = fineOdo;
+		double currentGas = gas - mLastGasCount;
+		mLastGasCount = gas;
+		double currentDistance = fineOdo - mLastOdoCount;
+		mLastOdoCount = fineOdo;
 
 		if(gas > 0.0) {
-			lastMPG = currentDistance / currentGas;  //miles per hour
-			drawGraph(getTime(), lastMPG, speedm);
+			mLastMPG = currentDistance / currentGas;  //miles per hour
+			drawGraph(getTime(), mLastMPG, speedm);
 		} else {
 			drawGraph(getTime(), 0.0, speedm);
 		}
