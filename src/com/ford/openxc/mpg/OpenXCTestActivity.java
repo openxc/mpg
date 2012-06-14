@@ -1,4 +1,4 @@
-package com.nickhs.testopenxc;
+package com.ford.openxc.mpg;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
