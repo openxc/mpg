@@ -220,8 +220,13 @@ public class MpgActivity extends Activity implements TextToSpeech.OnInitListener
     			tabs.setCurrentTab(1);
     			return true;
     		} else if (ev.getKeyCode() == KeyEvent.KEYCODE_5) {
-    			String strMPG = lastMPG + "miles per gallon";
-    			mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+    			if(TTSReady) {
+    				long roundedMPG = Math.round(lastMPG);
+    				String strMPG = roundedMPG + "miles per gallon";
+    				mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+    			} else {
+    				Log.e(TAG, "Text to speech called before initialized.");
+    			}
     		}
     	}
     	return super.dispatchKeyEvent(ev);
