@@ -26,10 +26,6 @@ import com.openxc.measurements.Measurement;
 import com.openxc.measurements.VehicleSpeed;
 import com.openxc.NoValueException;
 import com.openxc.remote.VehicleServiceException;
-import com.openxc.sources.trace.TraceVehicleDataSource;
-import com.openxc.sources.DataSourceException;
-
-import java.net.URI;
 
 /* TODO: Send the range into a sharedpreferences.
  * Check on how many points before we die
@@ -49,7 +45,7 @@ public class MpgActivity extends Activity {
 
 	private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
-	private VehicleManager vehicle;
+	private VehicleManager mVehicle;
 	private DbHelper dbHelper;
     private MeasurementUpdater mMeasurementUpdater;
 
@@ -60,6 +56,7 @@ public class MpgActivity extends Activity {
 
         if(savedInstanceState != null) {
             mStartTime = savedInstanceState.getLong("time");
+            mIsRecording = savedInstanceState.getBoolean("isRecording");
         }
 
 		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -83,7 +80,7 @@ public class MpgActivity extends Activity {
 		Log.i(TAG, "onDestroy called");
         stopMeasurementUpdater();
         try {
-            vehicle.removeListener(IgnitionStatus.class, ignitionListener);
+            mVehicle.removeListener(IgnitionStatus.class, ignitionListener);
         } catch(VehicleServiceException e) {
             Log.w(TAG, "Unable to remove ignition listener", e);
         }
@@ -106,17 +103,8 @@ public class MpgActivity extends Activity {
 		case R.id.close:
 			System.exit(0);
 			break;
-		case R.id.stopRecording:
-			stopRecording();
-			break;
-		case R.id.pauseRecording:
-			if (mIsRecording) {
-				stopMeasurementUpdater();
-				item.setIcon(android.R.drawable.ic_media_play);
-			} else {
-                startMeasurementUpdater();
-				item.setIcon(android.R.drawable.ic_media_pause);
-			}
+		case R.id.checkpoint:
+			recordCheckpoint();
 			break;
 		case R.id.viewOverview:
 			startActivity(new Intent(this, MileageActivity.class));
@@ -134,47 +122,23 @@ public class MpgActivity extends Activity {
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-			vehicle = null;
+			mVehicle = null;
 			Log.i(TAG, "Service unbound");
 		}
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			VehicleBinder binder = (VehicleBinder) service;
-			vehicle = binder.getService();
+			mVehicle = binder.getService();
 			Log.i(TAG, "Remote Vehicle Service bound");
-
-			Log.i(TAG, "Trace file is: "+sharedPrefs.getBoolean("use_trace_file", true));
-			if (sharedPrefs.getBoolean("use_trace_file", false)) {
-				Log.i(TAG, "Using trace file");
-				try {
-					vehicle.addSource(new TraceVehicleDataSource(
-                                MpgActivity.this,
-                                new URI("file:///sdcard/drivingnew")));
-				} catch (java.net.URISyntaxException e) {
-					Log.e(TAG, e.getMessage());
-					e.printStackTrace();
-				} catch(DataSourceException e) {
-					Log.e(TAG, e.getMessage());
-					e.printStackTrace();
-                }
-			} else {
-				try {
-					vehicle.initializeDefaultSources();
-				} catch (VehicleServiceException e) {
-					Log.e(TAG, e.getMessage());
-					e.printStackTrace();
-				}
-			}
-
 			try {
-				vehicle.addListener(IgnitionStatus.class, ignitionListener);
+				mVehicle.addListener(IgnitionStatus.class, ignitionListener);
 			} catch (VehicleServiceException e) {
 				e.printStackTrace();
 			} catch (UnrecognizedMeasurementTypeException e) {
 				e.printStackTrace();
 			}
-
+            startMeasurementUpdater();
 		}
 	};
 
@@ -191,11 +155,11 @@ public class MpgActivity extends Activity {
                         mLastIgnitionPosition == IgnitionPosition.OFF
                         || mLastIgnitionPosition == null) {
                     Log.i(TAG, "Ignition switched on -- starting recording");
-                    startRecording();
+                    // TODO mark that this is the beginning of a checkpoint
                 } else if(ignitionPosition == IgnitionPosition.OFF
                         && mLastIgnitionPosition == IgnitionPosition.RUN) {
-                    Log.i(TAG, "Ignition switched off -- halting recording");
-                    stopRecording();
+                    Log.i(TAG, "Ignition switched off -- checkpointing");
+                    recordCheckpoint();
                 }
                 mLastIgnitionPosition = ignitionPosition;
             }
@@ -221,10 +185,12 @@ public class MpgActivity extends Activity {
 
         public void run() {
             while(mRunning) {
-                if (checkForCANFresh())	getMeasurements();
-                else stopRecording();
+                if (checkForCANFresh())	{
+                    getMeasurements();
+                }
 
-                String choice = sharedPrefs.getString("update_interval", "1000");
+                String choice = sharedPrefs.getString("update_interval",
+                        "1000");
                 int pollFrequency = Integer.parseInt(choice);
                 try {
                     Thread.sleep(pollFrequency);
@@ -240,7 +206,7 @@ public class MpgActivity extends Activity {
 		VehicleSpeed speed;
 		double temp = -1;
 		try {
-			speed = (VehicleSpeed) vehicle.get(VehicleSpeed.class);
+			speed = (VehicleSpeed) mVehicle.get(VehicleSpeed.class);
 			temp = speed.getValue().doubleValue();
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
@@ -254,7 +220,7 @@ public class MpgActivity extends Activity {
 		FineOdometer fineOdo;
 		double temp = -1;
 		try {
-			fineOdo = (FineOdometer) vehicle.get(FineOdometer.class);
+			fineOdo = (FineOdometer) mVehicle.get(FineOdometer.class);
 			temp = fineOdo.getValue().doubleValue();
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
@@ -269,7 +235,7 @@ public class MpgActivity extends Activity {
 		FuelConsumed fuel;
 		double temp = 0;
 		try {
-			fuel = (FuelConsumed) vehicle.get(FuelConsumed.class);
+			fuel = (FuelConsumed) mVehicle.get(FuelConsumed.class);
 			temp = fuel.getValue().doubleValue();
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
@@ -281,20 +247,21 @@ public class MpgActivity extends Activity {
 	}
 
 	private boolean checkForCANFresh() {
-		boolean ret = false;
 		try {
-			VehicleSpeed measurement = (VehicleSpeed) vehicle.get(VehicleSpeed.class);
-			if (measurement.getAge() < CAN_TIMEOUT) ret = true;
+			VehicleSpeed measurement = (VehicleSpeed) mVehicle.get(
+                    VehicleSpeed.class);
+			if (measurement.getAge() < CAN_TIMEOUT) {
+                return true;
+            }
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
-			Log.e(TAG, "NoValueException thrown, ret is "+ret);
+			Log.e(TAG, "Unable to check for vehicle measurements", e);
 		}
-		return ret;
+		return false;
 	}
 
 	private void getMeasurements() {
-
 		double speedm = getSpeed();
 		double fineOdo = getFineOdometer();
 		double gas = getGasConsumed();
@@ -303,13 +270,13 @@ public class MpgActivity extends Activity {
 		fineOdo *= 0.62137; //Converting from km to miles.
 		gas *= 0.26417;  //Converting from L to Gal
 
-		double CurrentGas = gas - lastGasCount;
+		double currentGas = gas - lastGasCount;
 		lastGasCount = gas;
-		double CurrentDist = fineOdo - lastOdoCount;
+		double currentDistance = fineOdo - lastOdoCount;
 		lastOdoCount = fineOdo;
 
 		if(gas > 0.0) {
-			double mpg = CurrentDist / CurrentGas;  //miles per hour
+			double mpg = currentDistance / currentGas;  //miles per hour
 			drawGraph(getTime(), mpg, speedm);
 		} else {
 			drawGraph(getTime(), 0.0, speedm);
@@ -320,8 +287,6 @@ public class MpgActivity extends Activity {
         stopMeasurementUpdater();
         mMeasurementUpdater = new MeasurementUpdater();
         mMeasurementUpdater.start();
-
-        mIsRecording = true;
     }
 
     private void stopMeasurementUpdater() {
@@ -340,39 +305,20 @@ public class MpgActivity extends Activity {
 		return time;
 	}
 
-    private void startRecording() {
-        if(mIsRecording) {
-            Log.d(TAG, "Stopping recording before starting another one");
-            stopRecording();
-        }
-		mStartTime = getTime();
-        startMeasurementUpdater();
-        mIsRecording = true;
-    }
-
-	private void stopRecording() {
-        if(!mIsRecording) {
-            Log.d(TAG, "No active recording available to stop");
-            return;
-        }
-        stopMeasurementUpdater();
-
+	private void recordCheckpoint() {
 		try {
-			FineOdometer oMeas = (FineOdometer) vehicle.get(FineOdometer.class);
+			FineOdometer oMeas = (FineOdometer) mVehicle.get(FineOdometer.class);
 			final double distanceTravelled = oMeas.getValue().doubleValue();
-			FuelConsumed fMeas = (FuelConsumed) vehicle.get(FuelConsumed.class);
+			FuelConsumed fMeas = (FuelConsumed) mVehicle.get(FuelConsumed.class);
 			final double fuelConsumed = fMeas.getValue().doubleValue();
 			final double gasMileage = distanceTravelled/fuelConsumed;
 			double endTime = getTime();
 			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage,
                     mStartTime, endTime);
-            stopMeasurementUpdater();
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
 			e.printStackTrace();
 		}
-        mIsRecording = false;
 	}
-
 }

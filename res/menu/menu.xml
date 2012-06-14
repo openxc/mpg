@@ -4,33 +4,27 @@
     <item android:id="@+id/settings"
     	  android:title="@string/settingsTitle"
     />
-    
+
     <item android:id="@+id/viewOverview"
     	  android:title="@string/mileTitle"
     />
-        
-    <item android:id="@+id/stopRecording"
+
+    <item android:id="@+id/checkpoint"
     	  android:title="@string/saveTitle"
     	  android:icon="@android:drawable/ic_menu_save"
     	  android:showAsAction="ifRoom"
     />
-    
-    <item android:id="@+id/pauseRecording"
-          android:title="@string/pauseTitle"
-          android:icon="@android:drawable/ic_media_play"
-          android:showAsAction="ifRoom"
-    />
-    
+
     <item android:id="@+id/createData"
     	  android:title="@string/createDataTitle"
     />
-    
+
     <item android:id="@+id/close"
     	  android:title="@string/exitTitle"
     	  android:icon="@android:drawable/ic_menu_close_clear_cancel"
     	  android:showAsAction="ifRoom"
     />
-    
+
     <item android:id="@+id/viewGraphs"
           android:title="@string/viewGraphs"
     />

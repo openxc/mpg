@@ -70,14 +70,10 @@ public class ChartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        Log.d(TAG, "Renderer series count: " +
-                mRenderer.getSeriesRendererCount());
-        Log.d(TAG, "Renderer: " + mRenderer);
-        Log.d(TAG, "Data set: " + mDataset);
-		GraphicalView chartView = ChartFactory.getTimeChartView(getActivity(),
+		mChartView = ChartFactory.getTimeChartView(getActivity(),
                 mDataset, mRenderer, null);
-		chartView.addPanListener(panListener);
-        return chartView;
+		mChartView.addPanListener(panListener);
+        return mChartView;
     }
 
 	public void addData(double time, double value) {
