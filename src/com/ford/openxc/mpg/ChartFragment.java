@@ -113,10 +113,14 @@ public class ChartFragment extends Fragment {
 		rend.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
 
 		XYSeriesRenderer tempRend = new XYSeriesRenderer();
-		tempRend.setLineWidth(2);
-		tempRend.setColor(Color.parseColor("#FFBB33"));
+		tempRend.setLineWidth(10);
+		tempRend.setColor(getLineColor());
 		rend.addSeriesRenderer(tempRend);
 	}
+
+    protected int getLineColor() {
+        return Color.parseColor("#FFBB33");
+    }
 
 	private double[] convertToArray(XYSeries series, String type) {
 		int count = series.getItemCount();
