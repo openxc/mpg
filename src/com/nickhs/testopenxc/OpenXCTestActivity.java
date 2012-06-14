@@ -21,6 +21,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -87,6 +88,7 @@ public class OpenXCTestActivity extends Activity {
 	private VehicleManager vehicle;
 	private DbHelper dbHelper;
     private MeasurementUpdater mMeasurementUpdater;
+    private TabHost tabs;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -182,7 +184,7 @@ public class OpenXCTestActivity extends Activity {
 //		mGasChartView.addPanListener(panListener);
 //		botLayout.addView(mGasChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 		
-		TabHost tabs = (TabHost)findViewById(R.id.TabHost01);
+		tabs = (TabHost)findViewById(R.id.TabHost01);
 
         tabs.setup();
 
@@ -200,6 +202,20 @@ public class OpenXCTestActivity extends Activity {
         tabs.addTab(spec2);
 
 	}
+	
+	@Override
+    public boolean dispatchKeyEvent(KeyEvent ev) {
+    	if(ev.getAction() == KeyEvent.ACTION_DOWN){
+    		if(ev.getKeyCode() == KeyEvent.KEYCODE_1) {
+    			tabs.setCurrentTab(0);
+    			return true;
+    		} else if(ev.getKeyCode() == KeyEvent.KEYCODE_2) {
+    			tabs.setCurrentTab(1);
+    			return true;
+    		}
+    	}
+    	return super.dispatchKeyEvent(ev);
+    }
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
