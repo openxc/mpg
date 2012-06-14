@@ -56,8 +56,8 @@ import java.net.URI;
  * Fix getLastData
  */
 
-public class OpenXCTestActivity extends Activity {
-	private final static String TAG = "OpenXCTestActivity";
+public class MpgActivity extends Activity {
+	private final static String TAG = "MpgActivity";
 	private final static int CAN_TIMEOUT = 30;
 	//private final static int OPTIMAL_SPEED = 97;
 
@@ -317,7 +317,7 @@ public class OpenXCTestActivity extends Activity {
 				Log.i(TAG, "Using trace file");
 				try {
 					vehicle.addSource(new TraceVehicleDataSource(
-                                OpenXCTestActivity.this,
+                                MpgActivity.this,
                                 new URI("file:///sdcard/drivingnew")));
 				} catch (java.net.URISyntaxException e) {
 					Log.e(TAG, e.getMessage());
@@ -355,7 +355,7 @@ public class OpenXCTestActivity extends Activity {
 			if (key.equalsIgnoreCase("use_trace_file")) {
 				Log.i(TAG, "finishing");
 				finish();
-				startActivity(new Intent(getApplicationContext(), OpenXCTestActivity.class));
+				startActivity(new Intent(getApplicationContext(), MpgActivity.class));
 			}
 		}
 	};
