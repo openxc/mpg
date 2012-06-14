@@ -1,21 +1,11 @@
 package com.ford.openxc.mpg;
 
-import org.achartengine.ChartFactory;
-import org.achartengine.GraphicalView;
-import org.achartengine.model.XYMultipleSeriesDataset;
-import org.achartengine.model.XYSeries;
-import org.achartengine.renderer.XYMultipleSeriesRenderer;
-import org.achartengine.renderer.XYSeriesRenderer;
-import org.achartengine.tools.PanListener;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -24,14 +14,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
-import android.widget.TabHost;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.openxc.VehicleManager;
 import com.openxc.VehicleManager.VehicleBinder;
@@ -45,7 +27,6 @@ import com.openxc.measurements.VehicleSpeed;
 import com.openxc.NoValueException;
 import com.openxc.remote.VehicleServiceException;
 import com.openxc.sources.trace.TraceVehicleDataSource;
-import com.openxc.sources.usb.UsbVehicleDataSource;
 import com.openxc.sources.DataSourceException;
 
 import java.net.URI;
@@ -66,11 +47,6 @@ public class MpgActivity extends Activity {
 	private double lastGasCount = 0;
 	private double lastOdoCount = 0;
 
-	private XYSeries speedSeries = new XYSeries("Speed");
-	private GraphicalView mMPGChartView;
-
-	private TextView distance;
-	private TextView fuel;
 	private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
 	private VehicleManager vehicle;
@@ -84,10 +60,7 @@ public class MpgActivity extends Activity {
 
         if(savedInstanceState != null) {
             mStartTime = savedInstanceState.getLong("time");
-            mRecording = savedInstanceState.getBoolean("isRecording");
         }
-		distance = (TextView) findViewById(R.id.textDistance);
-		fuel = (TextView) findViewById(R.id.textFuel);
 
 		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -95,7 +68,6 @@ public class MpgActivity extends Activity {
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
 		dbHelper = new DbHelper(this);
-        // TODO initialize fragments
 	}
 
 	@Override
@@ -103,27 +75,6 @@ public class MpgActivity extends Activity {
 		super.onSaveInstanceState(outState);
 		outState.putLong("time", mStartTime);
 		outState.putBoolean("isRecording", mIsRecording);
-	}
-
-	private double[] convertToArray(XYSeries series, String type) {
-		int count = series.getItemCount();
-		double[] array = new double[count];
-		for (int i=0; i < count; i++) {
-			if (type.equalsIgnoreCase("x")) {
-				array[i] = series.getX(i);
-			}
-
-			else if (type.equalsIgnoreCase("y")) {
-				array[i] = series.getY(i);
-			}
-
-			else {
-				Log.e(TAG, "Invalid call to convertToArray");
-				Log.e(TAG, "Type is invalid: "+type);
-				break;
-			}
-		}
-		return array;
 	}
 
 	@Override
@@ -254,11 +205,11 @@ public class MpgActivity extends Activity {
 	private void drawGraph(double time, double mpg, double speed) {
         ChartFragment fragment = (ChartFragment) getFragmentManager()
                 .findFragmentById(R.id.speed_chart_fragment);
-        fragment.addDataPoint(time, speed);
+        fragment.addData(time, speed);
 
         fragment = (ChartFragment) getFragmentManager()
                 .findFragmentById(R.id.mpg_chart_fragment);
-        fragment.addDataPoint(time, mpg);
+        fragment.addData(time, mpg);
 	}
 
     private class MeasurementUpdater extends Thread {
@@ -351,20 +302,6 @@ public class MpgActivity extends Activity {
 		speedm *= 0.62137;  //Converting from kph to mph
 		fineOdo *= 0.62137; //Converting from km to miles.
 		gas *= 0.26417;  //Converting from L to Gal
-
-		final String temp = Double.toString(fineOdo);
-		distance.post(new Runnable() {
-			public void run() {
-				distance.setText(temp);
-			}
-		});
-
-		final double usage = gas;
-		fuel.post(new Runnable() {
-			public void run() {
-				fuel.setText(Double.toString(usage));
-			}
-		});
 
 		double CurrentGas = gas - lastGasCount;
 		lastGasCount = gas;

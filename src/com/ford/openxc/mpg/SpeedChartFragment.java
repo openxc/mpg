@@ -5,6 +5,7 @@ import android.os.Bundle;
 public class SpeedChartFragment extends ChartFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         init("Speed", "Time", "Speed");
     }
 }
