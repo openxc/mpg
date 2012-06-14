@@ -144,10 +144,10 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
     public boolean dispatchKeyEvent(KeyEvent ev) {
     	if(ev.getAction() == KeyEvent.ACTION_DOWN){
     		if(ev.getKeyCode() == KeyEvent.KEYCODE_1) {
-    			tabs.setCurrentTab(0);
+                mViewPager.setCurrentItem(0);
     			return true;
     		} else if(ev.getKeyCode() == KeyEvent.KEYCODE_2) {
-    			tabs.setCurrentTab(1);
+                mViewPager.setCurrentItem(1);
     			return true;
     		} else if (ev.getKeyCode() == KeyEvent.KEYCODE_5) {
     			if(TTSReady) {
