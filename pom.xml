@@ -31,10 +31,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>android</groupId>
+            <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
-            <version>3.1_r3</version>
+            <version>4.0.1.2</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>support-v4</artifactId>
+            <version>r7</version>
         </dependency>
         <dependency>
             <groupId>com.openxc</groupId>

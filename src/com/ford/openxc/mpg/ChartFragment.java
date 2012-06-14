@@ -11,20 +11,17 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 
 import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYSeriesRenderer;
 
 public class ChartFragment extends Fragment {
-	private final static String TAG = "ChartFragment";
-
 	private XYSeries mSeries;
 	private XYMultipleSeriesRenderer mRenderer;
     private XYMultipleSeriesDataset mDataset;

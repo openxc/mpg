@@ -1,6 +1,11 @@
 package com.ford.openxc.mpg;
 
-import android.app.Activity;
+import java.util.ArrayList;
+
+import android.app.ActionBar;
+
+import android.app.ActionBar.Tab;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -9,11 +14,17 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import android.support.v4.view.ViewPager;
 
 import com.openxc.VehicleManager;
 import com.openxc.VehicleManager.VehicleBinder;
@@ -33,7 +44,7 @@ import com.openxc.remote.VehicleServiceException;
  * Fix getLastData
  */
 
-public class MpgActivity extends Activity {
+public class MpgActivity extends FragmentActivity {
 	private final static String TAG = "MpgActivity";
 	private final static int CAN_TIMEOUT = 30;
 
@@ -48,15 +59,69 @@ public class MpgActivity extends Activity {
 	private VehicleManager mVehicle;
 	private DbHelper dbHelper;
     private MeasurementUpdater mMeasurementUpdater;
+    private ViewPager mViewPager;
+    private TabsAdapter mTabsAdapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
+
+        mViewPager = new ViewPager(this);
+        mViewPager.setId(R.id.pager);
+        setContentView(mViewPager);
+
+        final ActionBar bar = getActionBar();
+        bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+
+        mTabsAdapter = new TabsAdapter(this, mViewPager);
+        mTabsAdapter.addTab(bar.newTab().setText("Speed")
+                .setTabListener(new ActionBar.TabListener() {
+                    public void onTabSelected(ActionBar.Tab tab,
+                        FragmentTransaction ft) {
+                        mViewPager.setCurrentItem(tab.getPosition());
+                    }
+
+                    @Override
+                    public void onTabUnselected(Tab tab,
+                        FragmentTransaction ft) {
+                    }
+
+                @Override
+                public void onTabReselected(Tab tab, FragmentTransaction ft) {
+                }
+                }),
+                SpeedChartFragment.class, null);
+        mTabsAdapter.addTab(bar.newTab().setText("MPG")
+                .setTabListener(new ActionBar.TabListener() {
+                    public void onTabSelected(ActionBar.Tab tab,
+                        FragmentTransaction ft) {
+                        mViewPager.setCurrentItem(tab.getPosition());
+                    }
+
+                    @Override
+                    public void onTabUnselected(Tab tab,
+                        FragmentTransaction ft) {
+                    }
+
+                @Override
+                public void onTabReselected(Tab tab, FragmentTransaction ft) {
+                }
+                }),
+                MpgChartFragment.class, null);
+
+        mViewPager.setOnPageChangeListener(
+            new ViewPager.SimpleOnPageChangeListener() {
+                @Override
+                public void onPageSelected(int position) {
+                    getActionBar().setSelectedNavigationItem(position);
+                }
+            });
 
         if(savedInstanceState != null) {
             mStartTime = savedInstanceState.getLong("time");
             mIsRecording = savedInstanceState.getBoolean("isRecording");
+            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
 
 		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -72,6 +137,7 @@ public class MpgActivity extends Activity {
 		super.onSaveInstanceState(outState);
 		outState.putLong("time", mStartTime);
 		outState.putBoolean("isRecording", mIsRecording);
+        outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
 	}
 
 	@Override
@@ -166,14 +232,94 @@ public class MpgActivity extends Activity {
 		}
 	};
 
-	private void drawGraph(double time, double mpg, double speed) {
-        ChartFragment fragment = (ChartFragment) getFragmentManager()
-                .findFragmentById(R.id.speed_chart_fragment);
-        fragment.addData(time, speed);
+    public static class TabsAdapter extends FragmentPagerAdapter
+            implements ActionBar.TabListener, ViewPager.OnPageChangeListener {
+            private final Context mContext;
+            private final ActionBar mActionBar;
+            private final ViewPager mViewPager;
+            private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
 
-        fragment = (ChartFragment) getFragmentManager()
-                .findFragmentById(R.id.mpg_chart_fragment);
-        fragment.addData(time, mpg);
+            static final class TabInfo {
+                private final Class<?> clss;
+                private final Bundle args;
+
+                TabInfo(Class<?> _class, Bundle _args) {
+                    clss = _class;
+                    args = _args;
+                }
+            }
+
+            public TabsAdapter(FragmentActivity activity, ViewPager pager) {
+                super(activity.getSupportFragmentManager());
+                mContext = activity;
+                mActionBar = activity.getActionBar();
+                mViewPager = pager;
+                mViewPager.setAdapter(this);
+                mViewPager.setOnPageChangeListener(this);
+            }
+
+            public void addTab(ActionBar.Tab tab, Class<?> clss, Bundle args) {
+                TabInfo info = new TabInfo(clss, args);
+                tab.setTag(info);
+                tab.setTabListener(this);
+                mTabs.add(info);
+                mActionBar.addTab(tab);
+                notifyDataSetChanged();
+            }
+
+            @Override
+            public int getCount() {
+                return mTabs.size();
+            }
+
+            @Override
+            public Fragment getItem(int position) {
+                TabInfo info = mTabs.get(position);
+                return Fragment.instantiate(mContext, info.clss.getName(),
+                        info.args);
+            }
+
+            @Override
+            public void onPageScrolled(int position, float positionOffset,
+                    int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mActionBar.setSelectedNavigationItem(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+
+            @Override
+            public void onTabSelected(Tab tab, FragmentTransaction ft) {
+                Object tag = tab.getTag();
+                for (int i=0; i<mTabs.size(); i++) {
+                    if (mTabs.get(i) == tag) {
+                        mViewPager.setCurrentItem(i);
+                    }
+                }
+            }
+
+            @Override
+            public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+            }
+
+            @Override
+            public void onTabReselected(Tab tab, FragmentTransaction ft) {
+            }
+    }
+
+	private void drawGraph(double time, double mpg, double speed) {
+        // ChartFragment fragment = (ChartFragment) getSupportFragmentManager()
+                // .findFragmentById(R.id.speed_chart_fragment);
+        // fragment.addData(time, speed);
+
+        // fragment = (ChartFragment) getSupportFragmentManager()
+                // .findFragmentById(R.id.mpg_chart_fragment);
+        // fragment.addData(time, mpg);
 	}
 
     private class MeasurementUpdater extends Thread {
@@ -307,9 +453,11 @@ public class MpgActivity extends Activity {
 
 	private void recordCheckpoint() {
 		try {
-			FineOdometer oMeas = (FineOdometer) mVehicle.get(FineOdometer.class);
+			FineOdometer oMeas = (FineOdometer) mVehicle.get(
+                    FineOdometer.class);
 			final double distanceTravelled = oMeas.getValue().doubleValue();
-			FuelConsumed fMeas = (FuelConsumed) mVehicle.get(FuelConsumed.class);
+			FuelConsumed fMeas = (FuelConsumed) mVehicle.get(
+                    FuelConsumed.class);
 			final double fuelConsumed = fMeas.getValue().doubleValue();
 			final double gasMileage = distanceTravelled/fuelConsumed;
 			double endTime = getTime();
