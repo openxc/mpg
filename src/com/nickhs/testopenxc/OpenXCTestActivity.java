@@ -19,6 +19,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -46,7 +48,6 @@ import com.openxc.measurements.VehicleSpeed;
 import com.openxc.NoValueException;
 import com.openxc.remote.VehicleServiceException;
 import com.openxc.sources.trace.TraceVehicleDataSource;
-import com.openxc.sources.usb.UsbVehicleDataSource;
 import com.openxc.sources.DataSourceException;
 
 import java.net.URI;
@@ -57,7 +58,7 @@ import java.net.URI;
  * Fix getLastData
  */
 
-public class OpenXCTestActivity extends Activity {
+public class OpenXCTestActivity extends Activity implements TextToSpeech.OnInitListener{
 	private final static String TAG = "OpenXCTestActivity";
 	private final static int CAN_TIMEOUT = 30;
 	//private final static int OPTIMAL_SPEED = 97;
@@ -69,6 +70,7 @@ public class OpenXCTestActivity extends Activity {
 	private long mStartTime = -1;
 	private double lastGasCount = 0;
 	private double lastOdoCount = 0;
+	private double lastMPG = 0;
 
 	private XYMultipleSeriesRenderer mSpeedRenderer = new XYMultipleSeriesRenderer();
 	private XYMultipleSeriesRenderer mMPGRenderer = new XYMultipleSeriesRenderer();
@@ -89,6 +91,7 @@ public class OpenXCTestActivity extends Activity {
 	private DbHelper dbHelper;
     private MeasurementUpdater mMeasurementUpdater;
     private TabHost tabs;
+    private boolean TTSReady = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -200,6 +203,10 @@ public class OpenXCTestActivity extends Activity {
         spec2.setIndicator("Speed");
 
         tabs.addTab(spec2);
+        
+        Intent checkIntent = new Intent();
+        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkIntent, 1337);
 
 	}
 	
@@ -212,10 +219,33 @@ public class OpenXCTestActivity extends Activity {
     		} else if(ev.getKeyCode() == KeyEvent.KEYCODE_2) {
     			tabs.setCurrentTab(1);
     			return true;
+    		} else if (ev.getKeyCode() == KeyEvent.KEYCODE_5) {
+    			String strMPG = lastMPG + "miles per gallon";
+    			mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
     		}
     	}
     	return super.dispatchKeyEvent(ev);
     }
+	
+	private TextToSpeech mTts;
+	protected void onActivityResult(
+	        int requestCode, int resultCode, Intent data) {
+		Log.i(TAG, "onActivityResult called.");
+	    if (requestCode == 1337) {
+	        if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+	            // success, create the TTS instance
+	            mTts = new TextToSpeech(this, (OnInitListener) this);
+	            Log.i(TAG, "TTS object created!");
+	        } else {
+	            // missing data, install it
+	        	Log.i(TAG, "No TTS data!  Install!");
+	            Intent installIntent = new Intent();
+	            installIntent.setAction(
+	                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+	            startActivity(installIntent);
+	        }
+	    }
+	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
@@ -271,6 +301,7 @@ public class OpenXCTestActivity extends Activity {
         } catch(VehicleServiceException e) {
             Log.w(TAG, "Unable to remove ignition listener", e);
         }
+        mTts.shutdown();
 	}
 
 	@Override
@@ -562,8 +593,8 @@ public class OpenXCTestActivity extends Activity {
 		lastOdoCount = fineOdo;
 		
 		if(gas > 0.0) {
-			double mpg = CurrentDist / CurrentGas;  //miles per hour
-			drawGraph(getTime(), mpg, speedm);
+			lastMPG = CurrentDist / CurrentGas;  //miles per hour
+			drawGraph(getTime(), lastMPG, speedm);
 		} else {
 			drawGraph(getTime(), 0.0, speedm);
 		}
@@ -667,5 +698,11 @@ public class OpenXCTestActivity extends Activity {
 		tempRend.setColor(Color.parseColor("#FFBB33"));
 		rend.addSeriesRenderer(tempRend);
 		return dataset;
+	}
+
+	@Override
+	public void onInit(int status) {
+		Log.i(TAG, "Text to speech finished initializing.");
+		TTSReady = true;
 	}
 }
