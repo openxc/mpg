@@ -19,8 +19,11 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.Fragment;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.text.format.Time;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -45,7 +48,7 @@ import com.openxc.remote.VehicleServiceException;
  * Fix getLastData
  */
 
-public class MpgActivity extends FragmentActivity {
+public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInitListener{
 	private final static String TAG = "MpgActivity";
 	private final static int CAN_TIMEOUT = 30;
 
@@ -54,6 +57,7 @@ public class MpgActivity extends FragmentActivity {
 	private long mStartTime = -1;
 	private double lastGasCount = 0;
 	private double lastOdoCount = 0;
+	private double lastMPG = 0;
 
 	private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
@@ -62,6 +66,7 @@ public class MpgActivity extends FragmentActivity {
     private MeasurementUpdater mMeasurementUpdater;
     private ViewPager mViewPager;
     private TabsAdapter mTabsAdapter;
+    private boolean TTSReady = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -129,6 +134,52 @@ public class MpgActivity extends FragmentActivity {
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
 		dbHelper = new DbHelper(this);
+
+        Intent checkIntent = new Intent();
+        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkIntent, 1337);
+	}
+
+	@Override
+    public boolean dispatchKeyEvent(KeyEvent ev) {
+    	if(ev.getAction() == KeyEvent.ACTION_DOWN){
+    		if(ev.getKeyCode() == KeyEvent.KEYCODE_1) {
+    			tabs.setCurrentTab(0);
+    			return true;
+    		} else if(ev.getKeyCode() == KeyEvent.KEYCODE_2) {
+    			tabs.setCurrentTab(1);
+    			return true;
+    		} else if (ev.getKeyCode() == KeyEvent.KEYCODE_5) {
+    			if(TTSReady) {
+    				long roundedMPG = Math.round(lastMPG);
+    				String strMPG = roundedMPG + "miles per gallon";
+    				mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+    			} else {
+    				Log.e(TAG, "Text to speech called before initialized.");
+    			}
+    		}
+    	}
+    	return super.dispatchKeyEvent(ev);
+    }
+
+	private TextToSpeech mTts;
+	protected void onActivityResult(
+	        int requestCode, int resultCode, Intent data) {
+		Log.i(TAG, "onActivityResult called.");
+	    if (requestCode == 1337) {
+	        if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+	            // success, create the TTS instance
+	            mTts = new TextToSpeech(this, (OnInitListener) this);
+	            Log.i(TAG, "TTS object created!");
+	        } else {
+	            // missing data, install it
+	        	Log.i(TAG, "No TTS data!  Install!");
+	            Intent installIntent = new Intent();
+	            installIntent.setAction(
+	                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+	            startActivity(installIntent);
+	        }
+	    }
 	}
 
 	@Override
@@ -149,6 +200,7 @@ public class MpgActivity extends FragmentActivity {
         } catch(VehicleServiceException e) {
             Log.w(TAG, "Unable to remove ignition listener", e);
         }
+        mTts.shutdown();
 	}
 
 	@Override
@@ -437,8 +489,8 @@ public class MpgActivity extends FragmentActivity {
 		lastOdoCount = fineOdo;
 
 		if(gas > 0.0) {
-			double mpg = currentDistance / currentGas;  //miles per hour
-			drawGraph(getTime(), mpg, speedm);
+			lastMPG = currentDistance / currentGas;  //miles per hour
+			drawGraph(getTime(), lastMPG, speedm);
 		} else {
 			drawGraph(getTime(), 0.0, speedm);
 		}
@@ -483,5 +535,11 @@ public class MpgActivity extends FragmentActivity {
 		} catch (NoValueException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void onInit(int status) {
+		Log.i(TAG, "Text to speech finished initializing.");
+		TTSReady = true;
 	}
 }
