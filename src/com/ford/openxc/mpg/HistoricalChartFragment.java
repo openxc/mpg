@@ -34,6 +34,12 @@ public class HistoricalChartFragment extends ChartFragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mDatabase.close();
+    }
+
+    @Override
     protected GraphicalView getChartView() {
 		return ChartFactory.getBarChartView(getActivity(), getDataset(),
                 mRenderer, Type.DEFAULT);

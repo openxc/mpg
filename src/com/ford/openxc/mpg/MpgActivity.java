@@ -59,7 +59,7 @@ public class MpgActivity extends FragmentActivity
 	private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
 	private VehicleManager mVehicle;
-	private DbHelper dbHelper;
+	private DbHelper mDatabase;
     private MeasurementUpdater mMeasurementUpdater;
     private ViewPager mViewPager;
     private TabsAdapter mTabsAdapter;
@@ -104,7 +104,7 @@ public class MpgActivity extends FragmentActivity
 		Intent intent = new Intent(this, VehicleManager.class);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-		dbHelper = new DbHelper(this);
+		mDatabase = new DbHelper(this);
 
         Intent checkIntent = new Intent();
         checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
@@ -173,6 +173,7 @@ public class MpgActivity extends FragmentActivity
 	protected void onDestroy() {
 		super.onDestroy();
 		Log.i(TAG, "onDestroy called");
+        mDatabase.close();
         stopMeasurementUpdater();
         try {
             mVehicle.removeListener(IgnitionStatus.class, ignitionListener);
@@ -209,7 +210,7 @@ public class MpgActivity extends FragmentActivity
 			startActivity(new Intent(this, OverviewActivity.class));
 			break;
 		case R.id.createData:
-			dbHelper.createTestData(1);
+			mDatabase.createTestData(1);
 			break;
 		case R.id.viewGraphs:
 			startActivity(new Intent(this, MileageActivity.class));
@@ -444,7 +445,7 @@ public class MpgActivity extends FragmentActivity
 			final double fuelConsumed = fMeas.getValue().doubleValue();
 			final double gasMileage = distanceTravelled/fuelConsumed;
 			double endTime = getTime();
-			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage,
+			mDatabase.saveResults(distanceTravelled, fuelConsumed, gasMileage,
                     mStartTime, endTime);
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
