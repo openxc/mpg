@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/tSpeed"
                 android:textSize="12sp" />
-                
+
         </LinearLayout>
 
         <LinearLayout
@@ -45,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/labelGas"
                 android:textSize="12sp" />
-				
+
             <TextView
                 android:id="@+id/textFuel"
                 android:layout_width="wrap_content"
@@ -60,13 +60,6 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="horizontal" >
-
-            <TextView
-                android:id="@+id/labelScroll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/lScroll"
-                android:textSize="12sp" />
 
             <ToggleButton
                 android:id="@+id/toggleButton1"
@@ -94,29 +87,29 @@
         </FrameLayout>
 -->
 
-		<TabHost 
-		    android:id="@+id/TabHost01" 
-		    android:layout_width="wrap_content" 
+		<TabHost
+		    android:id="@+id/TabHost01"
+		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content">
-		    <TabWidget 
-		        android:id="@android:id/tabs" 
-		        android:layout_width="wrap_content" 
+		    <TabWidget
+		        android:id="@android:id/tabs"
+		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content" />
-		    <FrameLayout 
-		        android:id="@android:id/tabcontent" 
-		        android:layout_width="wrap_content" 
-		        android:layout_height="wrap_content" 
+		    <FrameLayout
+		        android:id="@android:id/tabcontent"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
 		        android:paddingTop="65px">
-			    <FrameLayout 
-			        android:id="@+id/topChart" 
-			        android:layout_width="wrap_content" 
-			        android:layout_height="wrap_content" 
+			    <FrameLayout
+			        android:id="@+id/topChart"
+			        android:layout_width="wrap_content"
+			        android:layout_height="wrap_content"
 			        android:paddingTop="65px">
 			    </FrameLayout>
-			    <FrameLayout 
-			        android:id="@+id/botChart" 
-			        android:layout_width="wrap_content" 
-			        android:layout_height="wrap_content" 
+			    <FrameLayout
+			        android:id="@+id/botChart"
+			        android:layout_width="wrap_content"
+			        android:layout_height="wrap_content"
 			        android:paddingTop="65px">
 			    </FrameLayout>
 		    </FrameLayout>

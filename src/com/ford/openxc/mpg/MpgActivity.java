@@ -59,29 +59,18 @@ import java.net.URI;
 public class MpgActivity extends Activity {
 	private final static String TAG = "MpgActivity";
 	private final static int CAN_TIMEOUT = 30;
-	//private final static int OPTIMAL_SPEED = 97;
 
 	private boolean mIsRecording = false;
-
-	private boolean scrollGraph = true;
 
 	private long mStartTime = -1;
 	private double lastGasCount = 0;
 	private double lastOdoCount = 0;
 
-	private XYMultipleSeriesRenderer mSpeedRenderer = new XYMultipleSeriesRenderer();
-	private XYMultipleSeriesRenderer mMPGRenderer = new XYMultipleSeriesRenderer();
-	//private XYMultipleSeriesRenderer mGasRenderer = new XYMultipleSeriesRenderer();
 	private XYSeries speedSeries = new XYSeries("Speed");
-	private XYSeries mpgSeries = new XYSeries("MPG");
-	//private XYSeries gasSeries = new XYSeries("Gas Consumed"); // FIXME strings should be hardcoded
-	private GraphicalView mSpeedChartView;
 	private GraphicalView mMPGChartView;
-	//private GraphicalView mGasChartView;
 
 	private TextView distance;
 	private TextView fuel;
-	private ToggleButton scroll;
 	private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
 	private VehicleManager vehicle;
@@ -92,134 +81,26 @@ public class MpgActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
-		Log.i(TAG, "onCreated");
 
-//		speed = (TextView) findViewById(R.id.textSpeed);
-//		mpg = (TextView) findViewById(R.id.textMPG);
+        if(savedInstanceState != null) {
+            mStartTime = savedInstanceState.getLong("time");
+            mRecording = savedInstanceState.getBoolean("isRecording");
+        }
 		distance = (TextView) findViewById(R.id.textDistance);
 		fuel = (TextView) findViewById(R.id.textFuel);
-		scroll = (ToggleButton) findViewById(R.id.toggleButton1);
-		scroll.setChecked(scrollGraph);
-		scroll.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				scrollGraph = !scrollGraph;
-				scroll.setChecked(scrollGraph);
-				mSpeedRenderer.setYAxisMin(0);
-				mMPGRenderer.setYAxisMin(0);
-				//mGasRenderer.setYAxisMin(0);
-			}
-		});
 
 		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-		sharedPrefs.registerOnSharedPreferenceChangeListener(prefListener);
 
 		Intent intent = new Intent(this, VehicleManager.class);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
 		dbHelper = new DbHelper(this);
-
-		//XYMultipleSeriesDataset gDataset = initGraph(mGasRenderer, gasSeries);
-		XYMultipleSeriesDataset sDataset = initGraph(mSpeedRenderer, speedSeries);
-		XYMultipleSeriesDataset mDataset = initGraph(mMPGRenderer, mpgSeries);
-
-
-		if (savedInstanceState != null) {
-			double[] speedX = savedInstanceState.getDoubleArray("speedX");
-			double[] speedY = savedInstanceState.getDoubleArray("speedY");
-			for (int i = 0; i < speedX.length; i++) {
-				speedSeries.add(speedX[i], speedY[i]);
-			}
-			
-			double[] mpgX = savedInstanceState.getDoubleArray("mpgX");
-			double[] mpgY = savedInstanceState.getDoubleArray("mpgY");
-			for (int i = 0; i < mpgX.length; i++) {
-				mpgSeries.add(mpgX[i], mpgY[i]);
-			}
-
-//			double[] gasX = savedInstanceState.getDoubleArray("gasX");
-//			double[] gasY = savedInstanceState.getDoubleArray("gasY");
-//			for (int i = 0; i < gasX.length; i++) {
-//				gasSeries.add(gasX[i], gasY[i]);
-//			}
-
-			Log.i(TAG, "Recreated graph");
-
-			mStartTime = savedInstanceState.getLong("time");
-		}
-
-		mSpeedRenderer.setXTitle("Time");
-		mSpeedRenderer.setYTitle("Speed (mph)");
-
-		mMPGRenderer.setXTitle("Time");
-		mMPGRenderer.setYTitle("Miles per Gallon");
-		
-//		mGasRenderer.setXTitle("Time");
-//		mGasRenderer.setYTitle("Fuel Usage (litres)");
-
-//		XYSeries optimalSpeed = new XYSeries("Optimal Speed"); //TODO String should be referenced from strings.xml
-//		optimalSpeed.add(0, OPTIMAL_SPEED); optimalSpeed.add(Integer.MAX_VALUE, OPTIMAL_SPEED);
-//		sDataset.addSeries(optimalSpeed);
-//		mSpeedRenderer.addSeriesRenderer(1, new XYSeriesRenderer());
-
-		mSpeedRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
-		mMPGRenderer.setRange(new double[] {0, 50000, 0, 100}); // FIXME
-		//mGasRenderer.setRange(new double[] {0, 50000, 0, 0.03});
-
-		FrameLayout topLayout = (FrameLayout) findViewById(R.id.topChart);
-		FrameLayout botLayout = (FrameLayout) findViewById(R.id.botChart);
-
-		mSpeedChartView = ChartFactory.getTimeChartView(this, sDataset, mSpeedRenderer, null);
-		mSpeedChartView.addPanListener(panListener);
-		botLayout.addView(mSpeedChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		
-		mMPGChartView = ChartFactory.getTimeChartView(this, mDataset, mMPGRenderer, null);
-		mMPGChartView.addPanListener(panListener);
-		topLayout.addView(mMPGChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-
-//		mGasChartView = ChartFactory.getTimeChartView(this, gDataset, mGasRenderer, null);
-//		mGasChartView.addPanListener(panListener);
-//		botLayout.addView(mGasChartView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		
-		TabHost tabs = (TabHost)findViewById(R.id.TabHost01);
-
-        tabs.setup();
-
-        TabHost.TabSpec spec1 = tabs.newTabSpec("tag1");
-
-        spec1.setContent(R.id.topChart);
-        spec1.setIndicator("Miles per Gallon");
-
-        tabs.addTab(spec1);
-
-        TabHost.TabSpec spec2 = tabs.newTabSpec("tag2");
-        spec2.setContent(R.id.botChart);
-        spec2.setIndicator("Speed");
-
-        tabs.addTab(spec2);
-
+        // TODO initialize fragments
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		Log.i(TAG, "onSaveInstanceState");
-		outState.putInt("count", mpgSeries.getItemCount());
-		double[] speedX = convertToArray(speedSeries, "x");
-		double[] speedY = convertToArray(speedSeries, "y");
-		double[] mpgX = convertToArray(mpgSeries, "x");
-		double[] mpgY = convertToArray(mpgSeries, "y");
-//		double[] gasX = convertToArray(gasSeries, "x");
-//		double[] gasY = convertToArray(gasSeries, "y");
-
-		outState.putDoubleArray("speedX", speedX);
-		outState.putDoubleArray("speedY", speedY);
-		outState.putDoubleArray("mpgX", mpgX);
-		outState.putDoubleArray("mpgY", mpgY);
-
-//		outState.putDoubleArray("gasX", gasX);
-//		outState.putDoubleArray("gasY", gasY);
 		outState.putLong("time", mStartTime);
 		outState.putBoolean("isRecording", mIsRecording);
 	}
@@ -346,28 +227,6 @@ public class MpgActivity extends Activity {
 		}
 	};
 
-	OnSharedPreferenceChangeListener prefListener = new OnSharedPreferenceChangeListener() {
-		@Override
-		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-				String key) {
-			Log.i(TAG, "Preference changed: "+key);
-
-			if (key.equalsIgnoreCase("use_trace_file")) {
-				Log.i(TAG, "finishing");
-				finish();
-				startActivity(new Intent(getApplicationContext(), MpgActivity.class));
-			}
-		}
-	};
-
-	PanListener panListener = new PanListener() {
-		@Override
-		public void panApplied() {
-			scrollGraph = false;
-			scroll.setChecked(false);
-		}
-	};
-
 	IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
 		@Override
 		public void receive(Measurement arg0) {
@@ -393,32 +252,13 @@ public class MpgActivity extends Activity {
 	};
 
 	private void drawGraph(double time, double mpg, double speed) {
-		speedSeries.add(time, speed);
-		mpgSeries.add(time, mpg);
-//		gasSeries.add(time, gas);
-		if (scrollGraph) {
-			if (time > 50000) { // FIXME should be a preference
-                String choice = sharedPrefs.getString("update_interval", "1000");
-                int pollFrequency = Integer.parseInt(choice);
-                double max = mpgSeries.getMaxX();
-				mSpeedRenderer.setXAxisMax(max + pollFrequency);
-				mSpeedRenderer.setXAxisMin(max-50000); //FIXME
-                mMPGRenderer.setXAxisMax(max + pollFrequency);
-				mMPGRenderer.setXAxisMin(max-50000); //FIXME
-//				mGasRenderer.setXAxisMax(max + pollFrequency);
-//				mGasRenderer.setXAxisMin(max - 50000);
-			}
-		}
-//		if (mSpeedChartView != null) {
-//			mSpeedChartView.repaint();
-//			mGasChartView.repaint();
-//		}
-		
-		if (mMPGChartView != null) {
-			mMPGChartView.repaint();
-			mSpeedChartView.repaint();
-		}
+        ChartFragment fragment = (ChartFragment) getFragmentManager()
+                .findFragmentById(R.id.speed_chart_fragment);
+        fragment.addDataPoint(time, speed);
 
+        fragment = (ChartFragment) getFragmentManager()
+                .findFragmentById(R.id.mpg_chart_fragment);
+        fragment.addDataPoint(time, mpg);
 	}
 
     private class MeasurementUpdater extends Thread {
@@ -458,7 +298,7 @@ public class MpgActivity extends Activity {
 		}
 		return temp;
 	}
-    
+
 	private double getFineOdometer() {
 		FineOdometer fineOdo;
 		double temp = -1;
@@ -470,7 +310,7 @@ public class MpgActivity extends Activity {
 		} catch (NoValueException e) {
 			Log.w(TAG, "Failed to get fine odometer measurement");
 		}
-		
+
 		return temp;
 	}
 
@@ -507,25 +347,11 @@ public class MpgActivity extends Activity {
 		double speedm = getSpeed();
 		double fineOdo = getFineOdometer();
 		double gas = getGasConsumed();
-		
+
 		speedm *= 0.62137;  //Converting from kph to mph
 		fineOdo *= 0.62137; //Converting from km to miles.
 		gas *= 0.26417;  //Converting from L to Gal
 
-//		final String temp = Double.toString(speedm);
-//		speed.post(new Runnable() {
-//			public void run() {
-//				speed.setText(temp);
-//			}
-//		});
-		
-//		final double usage = gas;
-//		mpg.post(new Runnable() {
-//			public void run() {
-//				mpg.setText(Double.toString(usage));
-//			}
-//		});
-		
 		final String temp = Double.toString(fineOdo);
 		distance.post(new Runnable() {
 			public void run() {
@@ -539,20 +365,18 @@ public class MpgActivity extends Activity {
 				fuel.setText(Double.toString(usage));
 			}
 		});
-		
+
 		double CurrentGas = gas - lastGasCount;
 		lastGasCount = gas;
 		double CurrentDist = fineOdo - lastOdoCount;
 		lastOdoCount = fineOdo;
-		
+
 		if(gas > 0.0) {
 			double mpg = CurrentDist / CurrentGas;  //miles per hour
 			drawGraph(getTime(), mpg, speedm);
 		} else {
 			drawGraph(getTime(), 0.0, speedm);
 		}
-
-//		drawGraph(getTime(), speedm, gas);
 	}
 
     private void startMeasurementUpdater() {
@@ -579,14 +403,6 @@ public class MpgActivity extends Activity {
 		return time;
 	}
 
-	private void makeToast(String say) {
-		Context context = getApplicationContext();
-		int duration = Toast.LENGTH_SHORT;
-
-		Toast toast = Toast.makeText(context, say, duration);
-		toast.show();
-	}
-
     private void startRecording() {
         if(mIsRecording) {
             Log.d(TAG, "Stopping recording before starting another one");
@@ -611,18 +427,9 @@ public class MpgActivity extends Activity {
 			final double fuelConsumed = fMeas.getValue().doubleValue();
 			final double gasMileage = distanceTravelled/fuelConsumed;
 			double endTime = getTime();
-			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage, mStartTime, endTime);
-
-			//startActivity(new Intent(this, OverviewActivity.class));
+			dbHelper.saveResults(distanceTravelled, fuelConsumed, gasMileage,
+                    mStartTime, endTime);
             stopMeasurementUpdater();
-
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					makeToast("Distance moved: "+distanceTravelled+". Fuel Consumed is: "+fuelConsumed+" Last trip gas mileage was: "+gasMileage);
-				}
-			});
-
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {
@@ -631,25 +438,4 @@ public class MpgActivity extends Activity {
         mIsRecording = false;
 	}
 
-	private XYMultipleSeriesDataset initGraph(XYMultipleSeriesRenderer rend, XYSeries series) {
-		rend.setApplyBackgroundColor(true);
-		rend.setBackgroundColor(Color.argb(100, 50, 50, 50));
-		rend.setAxisTitleTextSize(16);
-		rend.setChartTitleTextSize(20);
-		rend.setLabelsTextSize(15);
-		rend.setLegendTextSize(15);
-		rend.setShowGrid(true);
-		rend.setYAxisMax(100);
-		rend.setYAxisMin(0);
-		rend.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
-
-		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-		dataset.addSeries(series);
-
-		XYSeriesRenderer tempRend = new XYSeriesRenderer();
-		tempRend.setLineWidth(2);
-		tempRend.setColor(Color.parseColor("#FFBB33"));
-		rend.addSeriesRenderer(tempRend);
-		return dataset;
-	}
 }
