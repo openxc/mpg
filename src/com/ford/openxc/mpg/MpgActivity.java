@@ -200,7 +200,10 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
         } catch(VehicleServiceException e) {
             Log.w(TAG, "Unable to remove ignition listener", e);
         }
-        mTts.shutdown();
+
+        if(mTts != null) {
+            mTts.shutdown();
+        }
 	}
 
 	@Override
