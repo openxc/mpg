@@ -84,9 +84,8 @@ public class MileageActivity extends Activity {
 			}
 		});
 
-
 		mRenderer.setXTitle("Date Trip Started");
-		mRenderer.setYTitle("Gas Mileage");		
+		mRenderer.setYTitle("Gas Mileage");
 		LinearLayout layout = (LinearLayout) findViewById(R.id.chartM);
 		layout.addView(chart, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 	}
@@ -94,7 +93,7 @@ public class MileageActivity extends Activity {
 	@Override
 	protected Dialog onCreateDialog(int id, Bundle bundle) {
 		switch(id) {
-		case INFO_DIALOG: 
+		case INFO_DIALOG:
 			Log.i(TAG, "Creating info dialog");
 			Dialog d = new Dialog(this);
 

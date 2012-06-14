@@ -1,165 +1,19 @@
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/linearLayout1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:baselineAligned="false" >
-
-        <LinearLayout
-            android:id="@+id/linearLayout2"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+        android:orientation="horizontal">
+    <fragment android:name="com.ford.openxc.mpg.HistoricalMpgChartFragment"
+            android:id="@+id/historical_mpg_chart_fragment"
             android:layout_weight="1"
-            android:baselineAligned="false" >
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
 
-            <FrameLayout
-                android:id="@+id/topLeft"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_weight="1" >
-                              
-            </FrameLayout>
-            
-            <FrameLayout
-                android:id="@+id/topRight"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_weight="1" >
-
-                <RelativeLayout
-                    android:id="@+id/relativeLayout1"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent" >
-
-                    <TextView
-                        android:id="@+id/currentUsage"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:layout_below="@+id/textView2"
-                        android:text="@string/currentUsage"
-                        android:textSize="200sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/lastUsage"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignBaseline="@+id/currentUsage"
-                        android:layout_alignBottom="@+id/currentUsage"
-                        android:layout_toLeftOf="@+id/currentUsage"
-                        android:text="@string/lastUsage"
-                        android:textSize="120sp" />
-
-                    <TextView
-                        android:id="@+id/lYesterday"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_above="@+id/lastUsage"
-                        android:layout_alignLeft="@+id/lastUsage"
-                        android:text="@string/lYesterday" />
-
-                    <TextView
-                        android:id="@+id/textView1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignBaseline="@+id/currentUsage"
-                        android:layout_alignBottom="@+id/currentUsage"
-                        android:layout_toRightOf="@+id/currentUsage"
-                        android:textSize="200sp"
-                        android:text="@string/lUnits" />
-
-                    <TextView
-                        android:id="@+id/textView2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignLeft="@+id/lastUsage"
-                        android:text="@string/lTitle"
-                        android:textSize="40sp" />
-
-                </RelativeLayout>
-                
-            </FrameLayout>
-                       
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/linearLayout3"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+    <fragment android:name="com.ford.openxc.mpg.HistoricalFuelConsumptionChartFragment"
+            android:id="@+id/historical_fuel_chart_fragment"
             android:layout_weight="1"
-            android:baselineAligned="false" >
-            
-             <FrameLayout
-                android:id="@+id/bottomLeft"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_weight="1" >
-                
-            </FrameLayout>
-             
-             <FrameLayout
-                android:id="@+id/bottomRight"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_weight="1" >
-                
-                  <RelativeLayout
-                    android:id="@+id/relativeLayout2"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent" >
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
 
-                    <TextView
-                        android:id="@+id/lastTrip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:layout_below="@+id/textView4"
-                        android:text="@string/lastTrip"
-                        android:textSize="200sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/previousTrip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignBaseline="@+id/lastTrip"
-                        android:layout_alignBottom="@+id/lastTrip"
-                        android:layout_toLeftOf="@+id/lastTrip"
-                        android:text="@string/previousTrip"
-                        android:textSize="120sp" />
-
-                    <TextView
-                        android:id="@+id/lPreviousTrip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_above="@+id/previousTrip"
-                        android:layout_alignLeft="@+id/previousTrip"
-                        android:text="@string/lPreviousTrip" />
-
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignBaseline="@+id/lastTrip"
-                        android:layout_alignBottom="@+id/lastTrip"
-                        android:layout_toRightOf="@+id/lastTrip"
-                        android:textSize="70sp"
-                        android:text="@string/lUnitsTrip" />
-
-                    <TextView
-                        android:id="@+id/textView4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignLeft="@+id/previousTrip"
-                        android:text="@string/lTitle2"
-                        android:textSize="40sp" />
-
-                </RelativeLayout>
-                
-            </FrameLayout>
-             
-        </LinearLayout>
-
-    </LinearLayout>
+</LinearLayout>

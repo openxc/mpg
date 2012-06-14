@@ -1,7 +1,5 @@
 package com.ford.openxc.mpg;
 
-import java.util.ArrayList;
-
 import android.app.ActionBar;
 
 import android.app.ActionBar.Tab;
@@ -16,9 +14,6 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.Fragment;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.text.format.Time;
@@ -48,7 +43,8 @@ import com.openxc.remote.VehicleServiceException;
  * Fix getLastData
  */
 
-public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInitListener{
+public class MpgActivity extends FragmentActivity
+        implements TextToSpeech.OnInitListener {
 	private final static String TAG = "MpgActivity";
 	private final static int CAN_TIMEOUT = 30;
 
@@ -83,36 +79,10 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
 
         mTabsAdapter = new TabsAdapter(this, mViewPager);
         mTabsAdapter.addTab(bar.newTab().setText("Speed")
-                .setTabListener(new ActionBar.TabListener() {
-                    public void onTabSelected(ActionBar.Tab tab,
-                        FragmentTransaction ft) {
-                        mViewPager.setCurrentItem(tab.getPosition());
-                    }
-
-                    @Override
-                    public void onTabUnselected(Tab tab,
-                        FragmentTransaction ft) { }
-
-                    @Override
-                    public void onTabReselected(Tab tab,
-                        FragmentTransaction ft) { }
-                }),
+                .setTabListener(mTabListener),
                 SpeedChartFragment.class, null);
         mTabsAdapter.addTab(bar.newTab().setText("MPG")
-                .setTabListener(new ActionBar.TabListener() {
-                    public void onTabSelected(ActionBar.Tab tab,
-                        FragmentTransaction ft) {
-                        mViewPager.setCurrentItem(tab.getPosition());
-                    }
-
-                    @Override
-                    public void onTabUnselected(Tab tab,
-                        FragmentTransaction ft) { }
-
-                    @Override
-                    public void onTabReselected(Tab tab,
-                        FragmentTransaction ft) { }
-                }),
+                .setTabListener(mTabListener),
                 MpgChartFragment.class, null);
 
         mViewPager.setOnPageChangeListener(
@@ -236,13 +206,13 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
 			recordCheckpoint();
 			break;
 		case R.id.viewOverview:
-			startActivity(new Intent(this, MileageActivity.class));
+			startActivity(new Intent(this, OverviewActivity.class));
 			break;
 		case R.id.createData:
 			dbHelper.createTestData(1);
 			break;
 		case R.id.viewGraphs:
-			startActivity(new Intent(this, OverviewActivity.class));
+			startActivity(new Intent(this, MileageActivity.class));
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -294,88 +264,6 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
             }
 		}
 	};
-
-    public static class TabsAdapter extends FragmentPagerAdapter
-            implements ActionBar.TabListener, ViewPager.OnPageChangeListener {
-            private final Context mContext;
-            private final ActionBar mActionBar;
-            private final ViewPager mViewPager;
-            private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
-
-            static final class TabInfo {
-                private final Class<?> clss;
-                private final Bundle args;
-
-                TabInfo(Class<?> _class, Bundle _args) {
-                    clss = _class;
-                    args = _args;
-                }
-            }
-
-            public TabsAdapter(FragmentActivity activity, ViewPager pager) {
-                super(activity.getSupportFragmentManager());
-                mContext = activity;
-                mActionBar = activity.getActionBar();
-                mViewPager = pager;
-                mViewPager.setAdapter(this);
-                mViewPager.setOnPageChangeListener(this);
-            }
-
-            public void addTab(ActionBar.Tab tab, Class<?> clss, Bundle args) {
-                TabInfo info = new TabInfo(clss, args);
-                tab.setTag(info);
-                tab.setTabListener(this);
-                mTabs.add(info);
-                mActionBar.addTab(tab);
-                notifyDataSetChanged();
-            }
-
-            @Override
-            public int getCount() {
-                return mTabs.size();
-            }
-
-            @Override
-            public Fragment getItem(int position) {
-                TabInfo info = mTabs.get(position);
-
-                Fragment fragment = Fragment.instantiate(mContext,
-                        info.clss.getName(), info.args);
-                return fragment;
-            }
-
-            @Override
-            public void onPageScrolled(int position, float positionOffset,
-                    int positionOffsetPixels) {
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                mActionBar.setSelectedNavigationItem(position);
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-            }
-
-            @Override
-            public void onTabSelected(Tab tab, FragmentTransaction ft) {
-                Object tag = tab.getTag();
-                for (int i=0; i<mTabs.size(); i++) {
-                    if (mTabs.get(i) == tag) {
-                        mViewPager.setCurrentItem(i);
-                    }
-                }
-            }
-
-            @Override
-            public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-            }
-
-            @Override
-            public void onTabReselected(Tab tab, FragmentTransaction ft) {
-            }
-    }
 
     // TODO this is really ugly, we have to copy this private function from the
     // pager adapter to figure out how it registers our fragments
@@ -530,6 +418,21 @@ public class MpgActivity extends FragmentActivity implements TextToSpeech.OnInit
 		long time = curTime.toMillis(false);
 		return time;
 	}
+
+    private ActionBar.TabListener mTabListener = new ActionBar.TabListener() {
+        public void onTabSelected(ActionBar.Tab tab,
+                FragmentTransaction ft) {
+            mViewPager.setCurrentItem(tab.getPosition());
+        }
+
+        @Override
+        public void onTabUnselected(Tab tab,
+                FragmentTransaction ft) { }
+
+        @Override
+        public void onTabReselected(Tab tab,
+                FragmentTransaction ft) { }
+    };
 
 	private void recordCheckpoint() {
 		try {

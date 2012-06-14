@@ -25,24 +25,30 @@ import org.achartengine.renderer.XYSeriesRenderer;
 
 public class ChartFragment extends Fragment {
 	private XYSeries mSeries;
-	private XYMultipleSeriesRenderer mRenderer;
-    private XYMultipleSeriesDataset mDataset;
-	private GraphicalView mChartView;
+	protected XYMultipleSeriesRenderer mRenderer;
+	protected GraphicalView mChartView;
 	private SharedPreferences mPreferences;
     private String mName;
 
     protected void init(String name, String xLabel, String yLabel) {
-        mSeries = new XYSeries(mName);
+        mName = name;
 
         mRenderer = new XYMultipleSeriesRenderer();
         mRenderer.setXTitle(xLabel);
         mRenderer.setYTitle(yLabel);
 		mRenderer.setRange(new double[] {0, 50000, 0, 100});
+    }
 
-		mDataset = new XYMultipleSeriesDataset();
-		mDataset.addSeries(mSeries);
+    protected XYSeries getSeries() {
+        mSeries = new XYSeries(mName);
+        return mSeries;
 
-		initGraph(mRenderer);
+    }
+
+    protected XYMultipleSeriesDataset getDataset() {
+		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+		dataset.addSeries(getSeries());
+        return dataset;
     }
 
 	@Override
@@ -53,6 +59,7 @@ public class ChartFragment extends Fragment {
             restoreState(savedInstanceState);
         }
 
+		initGraph(mRenderer);
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(
                 getActivity());
     }
@@ -71,10 +78,15 @@ public class ChartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-		mChartView = ChartFactory.getTimeChartView(getActivity(),
-                mDataset, mRenderer, null);
-		mChartView.addPanListener(panListener);
+        mChartView = getChartView();
         return mChartView;
+    }
+
+    protected GraphicalView getChartView() {
+		GraphicalView chartView = ChartFactory.getTimeChartView(getActivity(),
+                getDataset(), mRenderer, null);
+		chartView.addPanListener(panListener);
+        return chartView;
     }
 
 	public void addData(double time, double value) {
@@ -99,7 +111,7 @@ public class ChartFragment extends Fragment {
 		outState.putDoubleArray("x", convertToArray(mSeries, "y"));
     }
 
-	private void initGraph(XYMultipleSeriesRenderer rend) {
+	protected void initGraph(XYMultipleSeriesRenderer rend) {
 		rend.setApplyBackgroundColor(true);
 		rend.setBackgroundColor(Color.argb(100, 50, 50, 50));
 		rend.setAxisTitleTextSize(16);
