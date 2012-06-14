@@ -20,8 +20,8 @@ public class HistoricalMpgChartFragment extends HistoricalChartFragment {
 
     @Override
     protected XYSeries getSeries() {
-        // TODO handle multiple time frames?
-        return getSeries(DbHelper.C_MILEAGE, "Miles per Gallon", true,
-                Timeframe.DAILY);
+        // TODO we touch WAY too much private state. re-think these classes.
+        mSeries = getSeries(DbHelper.C_MILEAGE, "Miles per Gallon", true);
+        return mSeries;
     }
 }

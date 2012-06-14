@@ -6,6 +6,7 @@ import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
 
 import org.achartengine.model.TimeSeries;
+import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
 
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
@@ -22,10 +23,16 @@ import android.os.Bundle;
 
 import android.util.Log;
 
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+
 public class HistoricalChartFragment extends ChartFragment {
     private static final String TAG = "HistoricalChartFragment";
-	private DbHelper mDatabase;
 	private final static String pattern = "YYYY-MM-dd";
+
+	private DbHelper mDatabase;
+    private Timeframe mTimeframe = Timeframe.DAILY;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,15 +73,30 @@ public class HistoricalChartFragment extends ChartFragment {
 		renderer.addSeriesRenderer(srend);
     }
 
-    protected enum Timeframe {
-        PER_TRIP, DAILY, HOURLY, WEEKLY, MONTHLY
+    protected Timeframe getTimeframe() {
+        return mTimeframe;
     }
 
+    protected void setTimeframe(Timeframe newTimeframe) {
+        Log.d(TAG, "Changing timeframe to " + newTimeframe);
+        mTimeframe = newTimeframe;
+        repaint();
+    }
+
+    private void repaint() {
+        ViewGroup parent = (ViewGroup) mChartView.getParent();
+        parent.removeView(mChartView);
+        mChartView = getChartView();
+        parent.addView(mChartView);
+    }
+
+
 	protected TimeSeries getSeries(String column, String dataName,
-            boolean average, Timeframe timeframe) {
+            boolean average) {
 		TimeSeries series = new TimeSeries(dataName);
 		final int bars = 12;
 
+        Timeframe timeframe = getTimeframe();
 		if (timeframe == Timeframe.DAILY) {
 			DateMidnight endDate = new DateMidnight();
 			DateMidnight startDate = endDate.minusDays(1);
@@ -147,7 +169,9 @@ public class HistoricalChartFragment extends ChartFragment {
                 }
                 data.close();
             }
-		}
+		} else {
+            Log.w(TAG, "Unknown timeframe: " + timeframe);
+        }
 		return series;
 	}
 

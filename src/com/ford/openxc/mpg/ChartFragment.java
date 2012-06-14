@@ -24,9 +24,10 @@ import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYSeriesRenderer;
 
 public class ChartFragment extends Fragment {
-	private XYSeries mSeries;
+	protected XYSeries mSeries;
 	protected XYMultipleSeriesRenderer mRenderer;
 	protected GraphicalView mChartView;
+    protected XYMultipleSeriesDataset mDataset;
 	private SharedPreferences mPreferences;
     private String mName;
 
@@ -46,9 +47,9 @@ public class ChartFragment extends Fragment {
     }
 
     protected XYMultipleSeriesDataset getDataset() {
-		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-		dataset.addSeries(getSeries());
-        return dataset;
+		mDataset = new XYMultipleSeriesDataset();
+		mDataset.addSeries(getSeries());
+        return mDataset;
     }
 
 	@Override

@@ -22,7 +22,7 @@ public class HistoricalFuelConsumptionChartFragment extends
 
     @Override
     protected XYSeries getSeries() {
-        return getSeries(DbHelper.C_FUEL, "Fuel Consumption (Gallons)", true,
-                Timeframe.DAILY);
+        mSeries = getSeries(DbHelper.C_FUEL, "Fuel Consumption (Gallons)", true);
+        return mSeries;
     }
 }

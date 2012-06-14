@@ -12,6 +12,7 @@ import android.util.Log;
 
 public class OverviewActivity extends FragmentActivity {
     private static final String TAG = "OverviewActivity";
+    private ActionBar mActionBar;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -19,24 +20,36 @@ public class OverviewActivity extends FragmentActivity {
         Log.i(TAG, "Created OverviewActivity");
         setContentView(R.layout.overview);
 
-        final ActionBar bar = getActionBar();
-        bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+        mActionBar = getActionBar();
+        mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        mActionBar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
-        bar.addTab(bar.newTab().setText("Per Trip").setTabListener(mTabListener));
-        bar.addTab(bar.newTab().setText("Daily").setTabListener(mTabListener));
-        bar.addTab(bar.newTab().setText("Weekly").setTabListener(mTabListener));
-        bar.addTab(bar.newTab().setText("Monthly").setTabListener(mTabListener));
+        mActionBar.addTab(mActionBar.newTab().setText("Per Trip")
+                .setTag(Timeframe.PER_TRIP).setTabListener(mTabListener));
+        mActionBar.addTab(mActionBar.newTab().setText("Daily")
+                .setTag(Timeframe.DAILY).setTabListener(mTabListener));
+        mActionBar.addTab(mActionBar.newTab().setText("Weekly")
+                .setTag(Timeframe.WEEKLY).setTabListener(mTabListener));
+        mActionBar.addTab(mActionBar.newTab().setText("Monthly")
+                .setTag(Timeframe.MONTHLY).setTabListener(mTabListener));
 
         if(savedInstanceState != null) {
-            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+            mActionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
 	}
 
     private ActionBar.TabListener mTabListener = new ActionBar.TabListener() {
         public void onTabSelected(ActionBar.Tab tab,
                 FragmentTransaction ft) {
-            // TODO
+            HistoricalChartFragment fragment = (HistoricalChartFragment)
+                getSupportFragmentManager().findFragmentById(
+                        R.id.historical_mpg_chart_fragment);
+            fragment.setTimeframe((Timeframe) tab.getTag());
+
+            fragment = (HistoricalChartFragment)
+                getSupportFragmentManager().findFragmentById(
+                        R.id.historical_fuel_chart_fragment);
+            fragment.setTimeframe((Timeframe) tab.getTag());
         }
 
         @Override
