@@ -11,6 +11,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
+import android.util.Log;
+
 import android.view.LayoutInflater;
 
 import android.view.View;
@@ -74,15 +76,17 @@ public class ChartFragment extends Fragment {
     }
 
 	public void addData(double time, double value) {
-        mSeries.add(time, value);
-        if(time > 50000) { // FIXME should be a preference
-            String choice = mPreferences.getString("update_interval", "1000");
-            int pollFrequency = Integer.parseInt(choice);
-            double max = mSeries.getMaxX();
-            mRenderer.setXAxisMax(max + pollFrequency);
-            mRenderer.setXAxisMin(max - 50000); //FIXME
-		}
-        mChartView.repaint();
+        if(mSeries != null && mChartView != null) {
+            mSeries.add(time, value);
+            if(time > 50000) { // FIXME should be a preference
+                String choice = mPreferences.getString("update_interval", "1000");
+                int pollFrequency = Integer.parseInt(choice);
+                double max = mSeries.getMaxX();
+                mRenderer.setXAxisMax(max + pollFrequency);
+                mRenderer.setXAxisMin(max - 50000); //FIXME
+            }
+            mChartView.repaint();
+        }
     }
 
 	@Override

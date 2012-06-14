@@ -6,16 +6,4 @@
         android:layout_height="fill_parent"
         android:orientation="horizontal" >
 
-    <fragment android:name="com.ford.openxc.mpg.MpgChartFragment"
-            android:id="@+id/mpg_chart_fragment"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent" />
-
-    <fragment android:name="com.ford.openxc.mpg.SpeedChartFragment"
-            android:id="@+id/speed_chart_fragment"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent" />
-
 </android.support.v4.view.ViewPager>

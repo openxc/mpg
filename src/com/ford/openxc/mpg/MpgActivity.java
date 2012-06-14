@@ -16,6 +16,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
@@ -84,12 +85,11 @@ public class MpgActivity extends FragmentActivity {
 
                     @Override
                     public void onTabUnselected(Tab tab,
-                        FragmentTransaction ft) {
-                    }
+                        FragmentTransaction ft) { }
 
-                @Override
-                public void onTabReselected(Tab tab, FragmentTransaction ft) {
-                }
+                    @Override
+                    public void onTabReselected(Tab tab,
+                        FragmentTransaction ft) { }
                 }),
                 SpeedChartFragment.class, null);
         mTabsAdapter.addTab(bar.newTab().setText("MPG")
@@ -101,12 +101,11 @@ public class MpgActivity extends FragmentActivity {
 
                     @Override
                     public void onTabUnselected(Tab tab,
-                        FragmentTransaction ft) {
-                    }
+                        FragmentTransaction ft) { }
 
-                @Override
-                public void onTabReselected(Tab tab, FragmentTransaction ft) {
-                }
+                    @Override
+                    public void onTabReselected(Tab tab,
+                        FragmentTransaction ft) { }
                 }),
                 MpgChartFragment.class, null);
 
@@ -275,8 +274,10 @@ public class MpgActivity extends FragmentActivity {
             @Override
             public Fragment getItem(int position) {
                 TabInfo info = mTabs.get(position);
-                return Fragment.instantiate(mContext, info.clss.getName(),
-                        info.args);
+
+                Fragment fragment = Fragment.instantiate(mContext,
+                        info.clss.getName(), info.args);
+                return fragment;
             }
 
             @Override
@@ -312,14 +313,28 @@ public class MpgActivity extends FragmentActivity {
             }
     }
 
-	private void drawGraph(double time, double mpg, double speed) {
-        // ChartFragment fragment = (ChartFragment) getSupportFragmentManager()
-                // .findFragmentById(R.id.speed_chart_fragment);
-        // fragment.addData(time, speed);
+    // TODO this is really ugly, we have to copy this private function from the
+    // pager adapter to figure out how it registers our fragments
+    private String getFragmentTag(int pos){
+            return "android:switcher:" + R.id.pager + ":" + pos;
+    }
 
-        // fragment = (ChartFragment) getSupportFragmentManager()
-                // .findFragmentById(R.id.mpg_chart_fragment);
-        // fragment.addData(time, mpg);
+	private void drawGraph(double time, double mpg, double speed) {
+        ChartFragment fragment = (ChartFragment) getSupportFragmentManager().
+            findFragmentByTag(getFragmentTag(1));
+        if(fragment != null) {
+            fragment.addData(time, speed);
+        } else {
+            Log.d(TAG, "Unable to load speed chart fragment");
+        }
+
+        fragment = (ChartFragment) getSupportFragmentManager().
+            findFragmentByTag(getFragmentTag(0));
+        if(fragment != null) {
+            fragment.addData(time, mpg);
+        } else {
+            Log.d(TAG, "Unable to load mpg chart fragment");
+        }
 	}
 
     private class MeasurementUpdater extends Thread {
