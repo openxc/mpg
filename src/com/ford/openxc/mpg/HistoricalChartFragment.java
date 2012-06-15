@@ -28,7 +28,7 @@ public class HistoricalChartFragment extends ChartFragment {
     private final static String pattern = "YYYY-MM-dd";
 
     private DbHelper mDatabase;
-    private Timeframe mTimeframe = Timeframe.DAILY;
+    private Timeframe mTimeframe = Timeframe.PER_TRIP;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -101,8 +101,7 @@ public class HistoricalChartFragment extends ChartFragment {
         renderer.setYAxisMin(0);
         renderer.setYAxisMax(series.getMaxY()+(series.getMaxY()*.05));
         renderer.setXAxisMin(Math.max(0, series.getMinX() - 3));
-        renderer.setXAxisMax(series.getMaxX() + (series.getMaxX()*.05));
-        renderer.setPanLimits(new double[] {0, series.getMaxX()+1, 0, 0});
+        renderer.setXAxisMax(series.getMaxX() + 1);
     }
 
     protected TimeSeries getSeries(String column, String dataName,
@@ -110,6 +109,7 @@ public class HistoricalChartFragment extends ChartFragment {
         TimeSeries series = new TimeSeries(dataName);
         final int bars = 12;
 
+        mRenderer.clearXTextLabels();
         Timeframe timeframe = getTimeframe();
         if (timeframe == Timeframe.DAILY) {
             DateMidnight endDate = (new DateMidnight()).plusDays(1);
@@ -121,10 +121,14 @@ public class HistoricalChartFragment extends ChartFragment {
                         endDate.toString(pattern), column);
                 total = calculateData(data, average);
 
+                startDate = startDate.plusDays(1);
                 series.add(startDate.getDayOfMonth(), total);
+                mRenderer.addXTextLabel(startDate.getDayOfMonth(),
+                        startDate.toString("d"));
+                mRenderer.setXTitle("Day in " + startDate.toString("MMMM"));
 
                 endDate = endDate.minusDays(1);
-                startDate = startDate.minusDays(1);
+                startDate = startDate.minusDays(2);
             }
         } else if (timeframe == Timeframe.WEEKLY) {
             DateMidnight endDate = new DateMidnight().plusDays(1);
@@ -136,7 +140,11 @@ public class HistoricalChartFragment extends ChartFragment {
                         endDate.toString(pattern), column);
                 total = calculateData(data, average);
 
+                startDate.plusDays(1);
                 series.add(startDate.getWeekOfWeekyear(), total);
+                mRenderer.addXTextLabel(startDate.getWeekOfWeekyear(),
+                        startDate.toString("w"));
+                mRenderer.setXTitle("Week of Year");
 
                 endDate = endDate.minusDays(7);
                 startDate = startDate.minusDays(7);
@@ -151,18 +159,24 @@ public class HistoricalChartFragment extends ChartFragment {
                         endDate.toString(pattern), column);
                 total = calculateData(data, average);
 
-                series.add(startDate.getMonthOfYear() + 1, total);
+                startDate = startDate.plusMonths(1);
+                series.add(startDate.getMonthOfYear(), total);
+                mRenderer.addXTextLabel(startDate.getMonthOfYear(),
+                        startDate.toString("M"));
+                mRenderer.setXTitle("Month");
 
                 endDate = endDate.minusMonths(1);
-                startDate = startDate.minusMonths(1);
+                startDate = startDate.minusMonths(2);
             }
         } else if (timeframe == Timeframe.PER_TRIP) {
             Cursor data = mDatabase.getLastData(bars, column);
             if(data.moveToLast()) {
                 for (int i=1; i < data.getCount(); i++) {
                     series.add(i, data.getDouble(0));
+                    mRenderer.addXTextLabel(i, "" + i);
                     data.moveToPrevious();
                 }
+                mRenderer.setXTitle("Trip Number");
                 data.close();
             }
         } else {
