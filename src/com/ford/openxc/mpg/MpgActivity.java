@@ -55,6 +55,7 @@ public class MpgActivity extends FragmentActivity
     private double mLastOdoCount = 0;
     private double mLastMPG = 0;
     private double mLastSpeed = 0;
+    private double mLastCheckpointTime = 0;
 
     private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
@@ -457,9 +458,12 @@ public class MpgActivity extends FragmentActivity
             final double fuelConsumed = fMeas.getValue().doubleValue();
             final double gasMileage = distanceTravelled/fuelConsumed;
             double endTime = getTime();
-            // TODO need to handle start/end times
+            if(mLastCheckpointTime == 0) {
+                mLastCheckpointTime = endTime;
+            }
             mDatabase.saveResults(distanceTravelled, fuelConsumed, gasMileage,
-                    endTime, endTime);
+                    mLastCheckpointTime, endTime);
+            mLastCheckpointTime = endTime;
         } catch (UnrecognizedMeasurementTypeException e) {
             e.printStackTrace();
         } catch (NoValueException e) {
