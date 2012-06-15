@@ -13,7 +13,7 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 public class DbHelper extends SQLiteOpenHelper {
-	
+
 	static final String TAG = "DbHelper";
 	static final String DB_NAME = "mileage.db";
 	static final int DB_VERSION = 14;
@@ -24,11 +24,9 @@ public class DbHelper extends SQLiteOpenHelper {
 	static final String C_DISTANCE = "distance";
 	static final String C_FUEL = "fuelConsumed";
 	static final String C_MILEAGE = "miles";
-//	Context gContext;
-	
+
 	public DbHelper(Context context) {
 		super(context, DB_NAME, null, DB_VERSION);
-//		gContext = context;
 	}
 
 	@Override
@@ -45,10 +43,10 @@ public class DbHelper extends SQLiteOpenHelper {
 		db.execSQL("drop table if exists "+TABLE);
 		onCreate(db);
 	}
-	
-	public void saveResults(double dist, double fuel, double mileage, double start, double end) {		
+
+	public void saveResults(double dist, double fuel, double mileage, double start, double end) {
 		double length = ((end-start)/(1000*60));
-		
+
 		ContentValues values = new ContentValues();
 		values.put(C_DISTANCE, dist);
 		Timestamp time = new Timestamp((long) start);
@@ -61,7 +59,7 @@ public class DbHelper extends SQLiteOpenHelper {
 		db.insertOrThrow(TABLE, null, values);
 		Log.i(TAG, "Insertion complete");
 	}
-	
+
 	public void createTestData(int num) {
 		for (int i=1; i < num; i++) {
 			DateTime endDt = new DateTime();
@@ -76,17 +74,16 @@ public class DbHelper extends SQLiteOpenHelper {
 			saveResults(dist, fuel, mileage, (start), (end));
 		}
 	}
-	
+
 	public Cursor getLastData(String startDate, String endDate, String col) {
 		SQLiteDatabase db = getReadableDatabase();
 		String[] colToFetch = {col};
-		Cursor c = db.query(TABLE, colToFetch, 
-				C_TIME+" BETWEEN '"+startDate+"' AND '"+endDate+"'",
+		Cursor c = db.query(TABLE, colToFetch,
+				C_TIME+" BETWEEN date('"+startDate+"') AND date('"+endDate+"')",
 				null, null, null, null);
-		// Cursor c = db.query(TABLE, colToFetch, C_TIME+" > '"+startDate+"'", null, null, null, null);
 		return c;
 	}
-	
+
 	public Cursor getLastData(int numOfData, String col) {
 		String num = Integer.toString(numOfData);
 		SQLiteDatabase db = getReadableDatabase();

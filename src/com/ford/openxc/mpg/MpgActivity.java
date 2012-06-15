@@ -445,8 +445,9 @@ public class MpgActivity extends FragmentActivity
 			final double fuelConsumed = fMeas.getValue().doubleValue();
 			final double gasMileage = distanceTravelled/fuelConsumed;
 			double endTime = getTime();
+            // TODO need to handle start/end times
 			mDatabase.saveResults(distanceTravelled, fuelConsumed, gasMileage,
-                    mStartTime, endTime);
+                    endTime, endTime);
 		} catch (UnrecognizedMeasurementTypeException e) {
 			e.printStackTrace();
 		} catch (NoValueException e) {

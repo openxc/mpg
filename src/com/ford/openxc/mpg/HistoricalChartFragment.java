@@ -32,7 +32,7 @@ public class HistoricalChartFragment extends ChartFragment {
 	private final static String pattern = "YYYY-MM-dd";
 
 	private DbHelper mDatabase;
-    private Timeframe mTimeframe = Timeframe.DAILY;
+    private Timeframe mTimeframe = Timeframe.PER_TRIP;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -98,8 +98,8 @@ public class HistoricalChartFragment extends ChartFragment {
 
         Timeframe timeframe = getTimeframe();
 		if (timeframe == Timeframe.DAILY) {
-			DateMidnight endDate = new DateMidnight();
-			DateMidnight startDate = endDate.minusDays(1);
+			DateMidnight endDate = (new DateMidnight()).plusDays(1);
+			DateMidnight startDate = endDate.minusDays(2);
 
 			for (int i = 0; i < bars; i++) {
 				double total = 0;
