@@ -30,11 +30,11 @@ import android.view.ViewParent;
 public class HistoricalChartFragment extends ChartFragment {
     private static final String TAG = "HistoricalChartFragment";
 	private final static String pattern = "YYYY-MM-dd";
-	private final int defaultColor = Color.parseColor("#FFBB33");
-	private final int tripColor = Color.parseColor("#FF0000");
-	private final int dailyColor = Color.parseColor("#00FF00");
-	private final int weeklyColor = Color.parseColor("#0000FF");
-	private final int monthlyColor = Color.parseColor("#FF00FF");
+	private final int DEFAULT_COLOR = Color.parseColor("#FFBB33");
+	private final int TRIP_COLOR = Color.parseColor("#FF0000");
+	private final int DAILY_COLOR = Color.parseColor("#00FF00");
+	private final int WEEKLY_COLOR = Color.parseColor("#0000FF");
+	private final int MONTHLY_COLOR = Color.parseColor("#FF00FF");
 
 	private DbHelper mDatabase;
     private Timeframe mTimeframe = Timeframe.DAILY;
@@ -70,7 +70,7 @@ public class HistoricalChartFragment extends ChartFragment {
         setAxis(renderer);
 
 		XYSeriesRenderer srend = new XYSeriesRenderer();
-		srend.setColor(defaultColor);
+		srend.setColor(DEFAULT_COLOR);
 		renderer.addSeriesRenderer(srend);
     }
 
@@ -85,13 +85,13 @@ public class HistoricalChartFragment extends ChartFragment {
         Log.i("HistoricalChartFragment", "Number of Serieses: " + SeriesCount);
         XYSeriesRenderer thisRend = (XYSeriesRenderer) mRenderer.getSeriesRendererAt(0);  //FIXME  Assuming one series per graph.
         if (newTimeframe == Timeframe.DAILY) {
-        	thisRend.setColor(dailyColor);		//FIXME  This change should be reflected in ChartFragment.getLineColor();
+        	thisRend.setColor(DAILY_COLOR);		//FIXME  This change should be reflected in ChartFragment.getLineColor();
         } else if (newTimeframe == Timeframe.WEEKLY) {
-        	thisRend.setColor(weeklyColor);
+        	thisRend.setColor(WEEKLY_COLOR);
         } else if (newTimeframe == Timeframe.MONTHLY) {
-        	thisRend.setColor(monthlyColor);
+        	thisRend.setColor(MONTHLY_COLOR);
         } else if (newTimeframe == Timeframe.PER_TRIP) {
-        	thisRend.setColor(tripColor);
+        	thisRend.setColor(TRIP_COLOR);
         }
         repaint();
     }
