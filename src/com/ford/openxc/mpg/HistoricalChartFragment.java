@@ -32,7 +32,7 @@ public class HistoricalChartFragment extends ChartFragment {
 	private final static String pattern = "YYYY-MM-dd";
 
 	private DbHelper mDatabase;
-    private Timeframe mTimeframe = Timeframe.PER_TRIP;
+    private Timeframe mTimeframe = Timeframe.DAILY;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,13 +60,9 @@ public class HistoricalChartFragment extends ChartFragment {
 		renderer.setBackgroundColor(Color.argb(1000, 50, 50, 50));
 		renderer.setYTitle(series.getTitle());
 		renderer.setShowGrid(true);
-		renderer.setYAxisMin(0);
-		renderer.setYAxisMax(series.getMaxY()+(series.getMaxY()*.05));
-		renderer.setXAxisMin(series.getMaxX()-4);
-		renderer.setXAxisMax(series.getMaxX()+(series.getMaxX()*.05));
 		renderer.setBarSpacing(0.05);
-		renderer.setPanLimits(new double[] {0, series.getMaxX()+1, 0, 0});
 		renderer.setAntialiasing(true);
+        setAxis(renderer);
 
 		XYSeriesRenderer srend = new XYSeriesRenderer();
 		srend.setColor(Color.parseColor("#FFBB33"));
@@ -86,10 +82,20 @@ public class HistoricalChartFragment extends ChartFragment {
     private void repaint() {
         ViewGroup parent = (ViewGroup) mChartView.getParent();
         parent.removeView(mChartView);
+
+        setAxis(mRenderer);
         mChartView = getChartView();
         parent.addView(mChartView);
     }
 
+    protected void setAxis(XYMultipleSeriesRenderer renderer) {
+        XYSeries series = getSeries();
+		renderer.setYAxisMin(0);
+		renderer.setYAxisMax(series.getMaxY()+(series.getMaxY()*.05));
+		renderer.setXAxisMin(series.getMinX() - 3);
+		renderer.setXAxisMax(series.getMaxX() + (series.getMaxX()*.05));
+		renderer.setPanLimits(new double[] {0, series.getMaxX()+1, 0, 0});
+    }
 
 	protected TimeSeries getSeries(String column, String dataName,
             boolean average) {
@@ -112,26 +118,9 @@ public class HistoricalChartFragment extends ChartFragment {
 				endDate = endDate.minusDays(1);
 				startDate = startDate.minusDays(1);
 			}
-		} else if (timeframe == Timeframe.HOURLY) {
-			DateTime endDate = new DateTime();
-			endDate = endDate.minusMinutes(endDate.getMinuteOfHour());
-			DateTime startDate = endDate.minusHours(1);
-
-			for (int i=0; i < bars; i++) {
-				double total = 0;
-				Cursor data = mDatabase.getLastData(startDate.toString(pattern),
-                        endDate.toString(pattern), column);
-				total = calculateData(data, average);
-
-				series.add(startDate.getHourOfDay(), total);
-
-				endDate = endDate.minusHours(1);
-				startDate = startDate.minusHours(1);
-			}
 		} else if (timeframe == Timeframe.WEEKLY) {
-			DateMidnight endDate = new DateMidnight();
-			endDate = endDate.minusDays(endDate.getDayOfWeek());
-			DateMidnight startDate = endDate.minusDays(7);
+			DateMidnight endDate = new DateMidnight().plusDays(1);
+			DateMidnight startDate = endDate.minusDays(8);
 
 			for (int i=0; i < bars; i++) {
 				double total = 0;
@@ -145,9 +134,8 @@ public class HistoricalChartFragment extends ChartFragment {
 				startDate = startDate.minusDays(7);
 			}
 		} else if (timeframe == Timeframe.MONTHLY) {
-			DateMidnight endDate = new DateMidnight();
-			endDate = endDate.minusDays(endDate.getDayOfMonth());
-			DateMidnight startDate = endDate.minusMonths(1);
+			DateMidnight endDate = new DateMidnight().plusMonths(1);
+			DateMidnight startDate = endDate.minusMonths(2);
 
 			for (int i=0; i < bars; i++) {
 				double total = 0;
@@ -155,7 +143,7 @@ public class HistoricalChartFragment extends ChartFragment {
                         endDate.toString(pattern), column);
 				total = calculateData(data, average);
 
-				series.add(startDate.getMonthOfYear(), total);
+				series.add(startDate.getMonthOfYear() + 1, total);
 
 				endDate = endDate.minusMonths(1);
 				startDate = startDate.minusMonths(1);
