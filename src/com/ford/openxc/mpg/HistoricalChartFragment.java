@@ -30,6 +30,11 @@ import android.view.ViewParent;
 public class HistoricalChartFragment extends ChartFragment {
     private static final String TAG = "HistoricalChartFragment";
 	private final static String pattern = "YYYY-MM-dd";
+	private final int defaultColor = Color.parseColor("#FFBB33");
+	private final int tripColor = Color.parseColor("#FF0000");
+	private final int dailyColor = Color.parseColor("#00FF00");
+	private final int weeklyColor = Color.parseColor("#0000FF");
+	private final int monthlyColor = Color.parseColor("#FF00FF");
 
 	private DbHelper mDatabase;
     private Timeframe mTimeframe = Timeframe.DAILY;
@@ -65,7 +70,7 @@ public class HistoricalChartFragment extends ChartFragment {
         setAxis(renderer);
 
 		XYSeriesRenderer srend = new XYSeriesRenderer();
-		srend.setColor(Color.parseColor("#FFBB33"));
+		srend.setColor(defaultColor);
 		renderer.addSeriesRenderer(srend);
     }
 
@@ -76,6 +81,18 @@ public class HistoricalChartFragment extends ChartFragment {
     protected void setTimeframe(Timeframe newTimeframe) {
         Log.d(TAG, "Changing timeframe to " + newTimeframe);
         mTimeframe = newTimeframe;
+        int SeriesCount = mRenderer.getSeriesRendererCount();
+        Log.i("HistoricalChartFragment", "Number of Serieses: " + SeriesCount);
+        XYSeriesRenderer thisRend = (XYSeriesRenderer) mRenderer.getSeriesRendererAt(0);  //FIXME  Assuming one series per graph.
+        if (newTimeframe == Timeframe.DAILY) {
+        	thisRend.setColor(dailyColor);		//FIXME  This change should be reflected in ChartFragment.getLineColor();
+        } else if (newTimeframe == Timeframe.WEEKLY) {
+        	thisRend.setColor(weeklyColor);
+        } else if (newTimeframe == Timeframe.MONTHLY) {
+        	thisRend.setColor(monthlyColor);
+        } else if (newTimeframe == Timeframe.PER_TRIP) {
+        	thisRend.setColor(tripColor);
+        }
         repaint();
     }
 
