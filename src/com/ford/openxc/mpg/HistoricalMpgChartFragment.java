@@ -7,11 +7,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 
 public class HistoricalMpgChartFragment extends HistoricalChartFragment {
-    private final int DEFAULT_COLOR = Color.parseColor("#FFBB33");
-    private final int PER_TRIP_COLOR = Color.parseColor("#FF0000");
-    private final int DAILY_COLOR = Color.parseColor("#00FF00");
-    private final int WEEKLY_COLOR = Color.parseColor("#0000FF");
-    private final int MONTHLY_COLOR = Color.parseColor("#FF00FF");
+    private final int DEFAULT_COLOR = Color.parseColor("#FFFFFF");
+    private final int PER_TRIP_COLOR = Color.parseColor("#A0F06C");
+    private final int DAILY_COLOR = Color.parseColor("#83F03C");
+    private final int WEEKLY_COLOR = Color.parseColor("#5CA82A");
+    private final int MONTHLY_COLOR = Color.parseColor("#58E000");
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

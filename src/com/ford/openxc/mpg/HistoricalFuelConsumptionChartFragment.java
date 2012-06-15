@@ -1,6 +1,5 @@
 package com.ford.openxc.mpg;
 
-import org.achartengine.model.TimeSeries;
 import org.achartengine.model.XYSeries;
 
 import android.graphics.Color;
@@ -9,11 +8,11 @@ import android.os.Bundle;
 
 public class HistoricalFuelConsumptionChartFragment extends
         HistoricalChartFragment {
-    private final int DEFAULT_COLOR = Color.parseColor("#FFBB33");
-    private final int PER_TRIP_COLOR = Color.parseColor("#FF0000");
-    private final int DAILY_COLOR = Color.parseColor("#00FF00");
-    private final int WEEKLY_COLOR = Color.parseColor("#0000FF");
-    private final int MONTHLY_COLOR = Color.parseColor("#FF00FF");
+    private final int DEFAULT_COLOR = Color.parseColor("#FFFFFF");
+    private final int PER_TRIP_COLOR = Color.parseColor("#F46E8F");
+    private final int DAILY_COLOR = Color.parseColor("#F43D6B");
+    private final int WEEKLY_COLOR = Color.parseColor("#AE2C4C");
+    private final int MONTHLY_COLOR = Color.parseColor("#E9003A");
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

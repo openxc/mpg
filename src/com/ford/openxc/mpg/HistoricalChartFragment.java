@@ -6,14 +6,12 @@ import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
 
 import org.achartengine.model.TimeSeries;
-import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
 
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
 import org.joda.time.DateMidnight;
-import org.joda.time.DateTime;
 
 import android.database.Cursor;
 
@@ -23,9 +21,7 @@ import android.os.Bundle;
 
 import android.util.Log;
 
-import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 
 public class HistoricalChartFragment extends ChartFragment {
     private static final String TAG = "HistoricalChartFragment";
@@ -80,7 +76,7 @@ public class HistoricalChartFragment extends ChartFragment {
     }
 
     private void repaint() {
-        //FIXME  Assuming one series per graph.
+        // TODO  Assuming one series per graph.
         XYSeriesRenderer thisRend = (XYSeriesRenderer)
             mRenderer.getSeriesRendererAt(0);
         thisRend.setColor(getLineColor());
