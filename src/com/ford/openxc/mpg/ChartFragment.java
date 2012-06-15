@@ -37,6 +37,8 @@ public class ChartFragment extends Fragment {
         mRenderer = new XYMultipleSeriesRenderer();
         mRenderer.setXTitle(xLabel);
         mRenderer.setYTitle(yLabel);
+        mRenderer.setAxisTitleTextSize(32);
+        
 		mRenderer.setRange(new double[] {0, 50000, 0, 100});
     }
 
