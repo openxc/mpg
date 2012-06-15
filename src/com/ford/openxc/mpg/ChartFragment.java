@@ -114,22 +114,22 @@ public class ChartFragment extends Fragment {
 		outState.putDoubleArray("x", convertToArray(mSeries, "y"));
     }
 
-	protected void initGraph(XYMultipleSeriesRenderer rend) {
-		rend.setApplyBackgroundColor(true);
-		rend.setBackgroundColor(Color.argb(100, 50, 50, 50));
-		rend.setChartTitleTextSize(20);
-		rend.setLabelsTextSize(25);
-        rend.setShowLegend(false);
-		rend.setShowGrid(true);
-		rend.setYAxisMax(100);
-		rend.setYAxisMin(0);
-		rend.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
-        rend.setMargins(getMargins());
+	protected void initGraph(XYMultipleSeriesRenderer renderer) {
+		renderer.setApplyBackgroundColor(true);
+		renderer.setBackgroundColor(Color.argb(100, 50, 50, 50));
+		renderer.setChartTitleTextSize(20);
+		renderer.setLabelsTextSize(25);
+        renderer.setShowLegend(false);
+		renderer.setShowGrid(true);
+		renderer.setYAxisMax(100);
+		renderer.setYAxisMin(0);
+		renderer.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
+        renderer.setMargins(getMargins());
 
-		XYSeriesRenderer tempRend = new XYSeriesRenderer();
-		tempRend.setLineWidth(10);
-		tempRend.setColor(getLineColor());
-		rend.addSeriesRenderer(tempRend);
+		XYSeriesRenderer seriesRenderer = new XYSeriesRenderer();
+		seriesRenderer.setLineWidth(10);
+		seriesRenderer.setColor(getLineColor());
+		renderer.addSeriesRenderer(seriesRenderer);
 	}
 
     protected int[] getMargins() {

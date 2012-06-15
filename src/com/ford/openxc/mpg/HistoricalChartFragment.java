@@ -55,14 +55,21 @@ public class HistoricalChartFragment extends ChartFragment {
         renderer.setApplyBackgroundColor(true);
         renderer.setBackgroundColor(Color.argb(1000, 50, 50, 50));
         renderer.setYTitle(series.getTitle());
+		renderer.setLabelsTextSize(25);
         renderer.setShowGrid(true);
         renderer.setBarSpacing(0.05);
         renderer.setAntialiasing(true);
+        renderer.setMargins(getMargins());
         setAxis(renderer);
 
         XYSeriesRenderer srend = new XYSeriesRenderer();
         srend.setColor(getLineColor());
         renderer.addSeriesRenderer(srend);
+    }
+
+    @Override
+    protected int[] getMargins() {
+        return new int[] { 35, 60, 10, 10 };
     }
 
     protected Timeframe getTimeframe() {
@@ -77,9 +84,9 @@ public class HistoricalChartFragment extends ChartFragment {
 
     private void repaint() {
         // TODO  Assuming one series per graph.
-        XYSeriesRenderer thisRend = (XYSeriesRenderer)
+        XYSeriesRenderer seriesRenderer = (XYSeriesRenderer)
             mRenderer.getSeriesRendererAt(0);
-        thisRend.setColor(getLineColor());
+        seriesRenderer.setColor(getLineColor());
 
         ViewGroup parent = (ViewGroup) mChartView.getParent();
         parent.removeView(mChartView);
