@@ -50,8 +50,8 @@ public class OverviewActivity extends FragmentActivity {
             	if((CurrentSelection >= 0) && (CurrentSelection <= 2)) {
 	            	mActionBar.setSelectedNavigationItem(CurrentSelection + 1);
             	}
-                return true;
             }
+            return true;
     	} else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
             if (event.getAction() == KeyEvent.ACTION_UP) {
             	Log.i(TAG, "Dpad left, key up.");
@@ -61,8 +61,8 @@ public class OverviewActivity extends FragmentActivity {
             	} else if (CurrentSelection == 0) {
             		finish();
             	}
-                return true;
             }
+            return true;
     	} 
     	return super.dispatchKeyEvent(event);
     }

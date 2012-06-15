@@ -123,16 +123,16 @@ public class MpgActivity extends FragmentActivity
             	case 1:
             		startActivity(new Intent(this, OverviewActivity.class));
             	}
-                return true;
             }
+            return true;
     	} else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
             if (event.getAction() == KeyEvent.ACTION_UP) {
             	Log.i(TAG, "Dpad left, key up.");
             	if(mViewPager.getCurrentItem() == 1) {
                 	mViewPager.setCurrentItem(0);
                 }
-                return true;
             }
+            return true;
     	} else if (event.getKeyCode() == KeyEvent.KEYCODE_5) {
             if(TTSReady) {
                 if(mViewPager.getCurrentItem() == 0){
@@ -148,6 +148,7 @@ public class MpgActivity extends FragmentActivity
             } else {
                 Log.e(TAG, "Text to speech called before initialized.");
             }
+            return true;
     	}
     	return super.dispatchKeyEvent(event);
     }
