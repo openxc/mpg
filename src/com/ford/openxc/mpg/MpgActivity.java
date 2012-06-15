@@ -210,7 +210,7 @@ public class MpgActivity extends FragmentActivity
 			startActivity(new Intent(this, OverviewActivity.class));
 			break;
 		case R.id.createData:
-			mDatabase.createTestData(1);
+			mDatabase.createTestData(100);
 			break;
 		case R.id.viewGraphs:
 			startActivity(new Intent(this, MileageActivity.class));
