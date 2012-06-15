@@ -112,33 +112,44 @@ public class MpgActivity extends FragmentActivity
     }
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent ev) {
-        if(ev.getAction() == KeyEvent.ACTION_DOWN){
-            if(ev.getKeyCode() == KeyEvent.KEYCODE_1) {
-                mViewPager.setCurrentItem(0);
+    public boolean dispatchKeyEvent(KeyEvent event) {
+    	if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+            	Log.i(TAG, "Dpad right, key up.");
+            	switch(mViewPager.getCurrentItem()) {
+            	case 0:
+            		mViewPager.setCurrentItem(1);
+            		break;
+            	case 1:
+            		startActivity(new Intent(this, OverviewActivity.class));
+            	}
                 return true;
-            } else if(ev.getKeyCode() == KeyEvent.KEYCODE_2) {
-                mViewPager.setCurrentItem(1);
-                return true;
-            } else if (ev.getKeyCode() == KeyEvent.KEYCODE_5) {
-                if(TTSReady) {
-                    int CurrentChart = mViewPager.getCurrentItem();
-                    if(CurrentChart == 0){
-                        long roundedSpeed = Math.round(mLastSpeed);
-                        String strMPG = roundedSpeed + "miles per hour";
-                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
-                    } else {
-
-                        long roundedMPG = Math.round(mLastMPG);
-                        String strMPG = roundedMPG + "miles per gallon";
-                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
-                    }
-                } else {
-                    Log.e(TAG, "Text to speech called before initialized.");
-                }
             }
-        }
-        return super.dispatchKeyEvent(ev);
+    	} else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+            	Log.i(TAG, "Dpad left, key up.");
+            	if(mViewPager.getCurrentItem() == 1) {
+                	mViewPager.setCurrentItem(0);
+                }
+                return true;
+            }
+    	} else if (event.getKeyCode() == KeyEvent.KEYCODE_5) {
+            if(TTSReady) {
+                if(mViewPager.getCurrentItem() == 0){
+                    long roundedSpeed = Math.round(mLastSpeed);
+                    String strMPG = roundedSpeed + "miles per hour";
+                    mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+                } else {
+
+                    long roundedMPG = Math.round(mLastMPG);
+                    String strMPG = roundedMPG + "miles per gallon";
+                    mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+                }
+            } else {
+                Log.e(TAG, "Text to speech called before initialized.");
+            }
+    	}
+    	return super.dispatchKeyEvent(event);
     }
 
     private TextToSpeech mTts;

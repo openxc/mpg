@@ -4,11 +4,14 @@ import android.app.ActionBar;
 
 import android.app.ActionBar.Tab;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.FragmentActivity;
 
 import android.util.Log;
+import android.view.KeyEvent;
 
 public class OverviewActivity extends FragmentActivity {
     private static final String TAG = "OverviewActivity";
@@ -36,6 +39,32 @@ public class OverviewActivity extends FragmentActivity {
         if(savedInstanceState != null) {
             mActionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
+    }
+    
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+    	if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+            	Log.i(TAG, "Dpad right, key up.");
+            	int CurrentSelection = mActionBar.getSelectedNavigationIndex();
+            	if((CurrentSelection >= 0) && (CurrentSelection <= 2)) {
+	            	mActionBar.setSelectedNavigationItem(CurrentSelection + 1);
+            	}
+                return true;
+            }
+    	} else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+            	Log.i(TAG, "Dpad left, key up.");
+            	int CurrentSelection = mActionBar.getSelectedNavigationIndex();
+            	if((CurrentSelection >= 1) && (CurrentSelection <= 3)) {
+	            	mActionBar.setSelectedNavigationItem(CurrentSelection - 1);
+            	} else if (CurrentSelection == 0) {
+            		finish();
+            	}
+                return true;
+            }
+    	} 
+    	return super.dispatchKeyEvent(event);
     }
 
     private ActionBar.TabListener mTabListener = new ActionBar.TabListener() {
