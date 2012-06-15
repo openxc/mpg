@@ -38,7 +38,7 @@ public class ChartFragment extends Fragment {
         mRenderer.setXTitle(xLabel);
         mRenderer.setYTitle(yLabel);
         mRenderer.setAxisTitleTextSize(32);
-        
+
 		mRenderer.setRange(new double[] {0, 50000, 0, 100});
     }
 
@@ -117,7 +117,6 @@ public class ChartFragment extends Fragment {
 	protected void initGraph(XYMultipleSeriesRenderer rend) {
 		rend.setApplyBackgroundColor(true);
 		rend.setBackgroundColor(Color.argb(100, 50, 50, 50));
-		rend.setAxisTitleTextSize(16);
 		rend.setChartTitleTextSize(20);
 		rend.setLabelsTextSize(15);
         rend.setShowLegend(false);
