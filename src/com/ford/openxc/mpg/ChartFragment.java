@@ -118,19 +118,23 @@ public class ChartFragment extends Fragment {
 		rend.setApplyBackgroundColor(true);
 		rend.setBackgroundColor(Color.argb(100, 50, 50, 50));
 		rend.setChartTitleTextSize(20);
-		rend.setLabelsTextSize(15);
+		rend.setLabelsTextSize(25);
         rend.setShowLegend(false);
-		rend.setLegendTextSize(15);
 		rend.setShowGrid(true);
 		rend.setYAxisMax(100);
 		rend.setYAxisMin(0);
 		rend.setPanLimits(new double[] {0, Integer.MAX_VALUE, 0, 400});
+        rend.setMargins(getMargins());
 
 		XYSeriesRenderer tempRend = new XYSeriesRenderer();
 		tempRend.setLineWidth(10);
 		tempRend.setColor(getLineColor());
 		rend.addSeriesRenderer(tempRend);
 	}
+
+    protected int[] getMargins() {
+        return new int[] { 35, 65, 10, 40 };
+    }
 
     protected int getLineColor() {
         return Color.parseColor("#FFBB33");
