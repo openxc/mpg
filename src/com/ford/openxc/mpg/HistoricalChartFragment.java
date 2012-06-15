@@ -100,7 +100,7 @@ public class HistoricalChartFragment extends ChartFragment {
         XYSeries series = getSeries();
         renderer.setYAxisMin(0);
         renderer.setYAxisMax(series.getMaxY()+(series.getMaxY()*.05));
-        renderer.setXAxisMin(series.getMinX() - 3);
+        renderer.setXAxisMin(Math.max(0, series.getMinX() - 3));
         renderer.setXAxisMax(series.getMaxX() + (series.getMaxX()*.05));
         renderer.setPanLimits(new double[] {0, series.getMaxX()+1, 0, 0});
     }
