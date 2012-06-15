@@ -29,19 +29,14 @@ import android.view.ViewParent;
 
 public class HistoricalChartFragment extends ChartFragment {
     private static final String TAG = "HistoricalChartFragment";
-	private final static String pattern = "YYYY-MM-dd";
-	private final int DEFAULT_COLOR = Color.parseColor("#FFBB33");
-	private final int TRIP_COLOR = Color.parseColor("#FF0000");
-	private final int DAILY_COLOR = Color.parseColor("#00FF00");
-	private final int WEEKLY_COLOR = Color.parseColor("#0000FF");
-	private final int MONTHLY_COLOR = Color.parseColor("#FF00FF");
+    private final static String pattern = "YYYY-MM-dd";
 
-	private DbHelper mDatabase;
+    private DbHelper mDatabase;
     private Timeframe mTimeframe = Timeframe.DAILY;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-		mDatabase = new DbHelper(getActivity());
+        mDatabase = new DbHelper(getActivity());
         super.onCreate(savedInstanceState);
     }
 
@@ -53,25 +48,25 @@ public class HistoricalChartFragment extends ChartFragment {
 
     @Override
     protected GraphicalView getChartView() {
-		return ChartFactory.getBarChartView(getActivity(), getDataset(),
+        return ChartFactory.getBarChartView(getActivity(), getDataset(),
                 mRenderer, Type.DEFAULT);
     }
 
     @Override
-	protected void initGraph(XYMultipleSeriesRenderer renderer) {
+    protected void initGraph(XYMultipleSeriesRenderer renderer) {
         XYSeries series = getSeries();
-		renderer.setShowLegend(false);
-		renderer.setApplyBackgroundColor(true);
-		renderer.setBackgroundColor(Color.argb(1000, 50, 50, 50));
-		renderer.setYTitle(series.getTitle());
-		renderer.setShowGrid(true);
-		renderer.setBarSpacing(0.05);
-		renderer.setAntialiasing(true);
+        renderer.setShowLegend(false);
+        renderer.setApplyBackgroundColor(true);
+        renderer.setBackgroundColor(Color.argb(1000, 50, 50, 50));
+        renderer.setYTitle(series.getTitle());
+        renderer.setShowGrid(true);
+        renderer.setBarSpacing(0.05);
+        renderer.setAntialiasing(true);
         setAxis(renderer);
 
-		XYSeriesRenderer srend = new XYSeriesRenderer();
-		srend.setColor(DEFAULT_COLOR);
-		renderer.addSeriesRenderer(srend);
+        XYSeriesRenderer srend = new XYSeriesRenderer();
+        srend.setColor(getLineColor());
+        renderer.addSeriesRenderer(srend);
     }
 
     protected Timeframe getTimeframe() {
@@ -81,22 +76,15 @@ public class HistoricalChartFragment extends ChartFragment {
     protected void setTimeframe(Timeframe newTimeframe) {
         Log.d(TAG, "Changing timeframe to " + newTimeframe);
         mTimeframe = newTimeframe;
-        int SeriesCount = mRenderer.getSeriesRendererCount();
-        Log.i("HistoricalChartFragment", "Number of Serieses: " + SeriesCount);
-        XYSeriesRenderer thisRend = (XYSeriesRenderer) mRenderer.getSeriesRendererAt(0);  //FIXME  Assuming one series per graph.
-        if (newTimeframe == Timeframe.DAILY) {
-        	thisRend.setColor(DAILY_COLOR);		//FIXME  This change should be reflected in ChartFragment.getLineColor();
-        } else if (newTimeframe == Timeframe.WEEKLY) {
-        	thisRend.setColor(WEEKLY_COLOR);
-        } else if (newTimeframe == Timeframe.MONTHLY) {
-        	thisRend.setColor(MONTHLY_COLOR);
-        } else if (newTimeframe == Timeframe.PER_TRIP) {
-        	thisRend.setColor(TRIP_COLOR);
-        }
         repaint();
     }
 
     private void repaint() {
+        //FIXME  Assuming one series per graph.
+        XYSeriesRenderer thisRend = (XYSeriesRenderer)
+            mRenderer.getSeriesRendererAt(0);
+        thisRend.setColor(getLineColor());
+
         ViewGroup parent = (ViewGroup) mChartView.getParent();
         parent.removeView(mChartView);
 
@@ -107,81 +95,81 @@ public class HistoricalChartFragment extends ChartFragment {
 
     protected void setAxis(XYMultipleSeriesRenderer renderer) {
         XYSeries series = getSeries();
-		renderer.setYAxisMin(0);
-		renderer.setYAxisMax(series.getMaxY()+(series.getMaxY()*.05));
-		renderer.setXAxisMin(series.getMinX() - 3);
-		renderer.setXAxisMax(series.getMaxX() + (series.getMaxX()*.05));
-		renderer.setPanLimits(new double[] {0, series.getMaxX()+1, 0, 0});
+        renderer.setYAxisMin(0);
+        renderer.setYAxisMax(series.getMaxY()+(series.getMaxY()*.05));
+        renderer.setXAxisMin(series.getMinX() - 3);
+        renderer.setXAxisMax(series.getMaxX() + (series.getMaxX()*.05));
+        renderer.setPanLimits(new double[] {0, series.getMaxX()+1, 0, 0});
     }
 
-	protected TimeSeries getSeries(String column, String dataName,
+    protected TimeSeries getSeries(String column, String dataName,
             boolean average) {
-		TimeSeries series = new TimeSeries(dataName);
-		final int bars = 12;
+        TimeSeries series = new TimeSeries(dataName);
+        final int bars = 12;
 
         Timeframe timeframe = getTimeframe();
-		if (timeframe == Timeframe.DAILY) {
-			DateMidnight endDate = (new DateMidnight()).plusDays(1);
-			DateMidnight startDate = endDate.minusDays(2);
+        if (timeframe == Timeframe.DAILY) {
+            DateMidnight endDate = (new DateMidnight()).plusDays(1);
+            DateMidnight startDate = endDate.minusDays(2);
 
-			for (int i = 0; i < bars; i++) {
-				double total = 0;
-				Cursor data = mDatabase.getLastData(startDate.toString(pattern),
+            for (int i = 0; i < bars; i++) {
+                double total = 0;
+                Cursor data = mDatabase.getLastData(startDate.toString(pattern),
                         endDate.toString(pattern), column);
-				total = calculateData(data, average);
+                total = calculateData(data, average);
 
-				series.add(startDate.getDayOfMonth(), total);
+                series.add(startDate.getDayOfMonth(), total);
 
-				endDate = endDate.minusDays(1);
-				startDate = startDate.minusDays(1);
-			}
-		} else if (timeframe == Timeframe.WEEKLY) {
-			DateMidnight endDate = new DateMidnight().plusDays(1);
-			DateMidnight startDate = endDate.minusDays(8);
+                endDate = endDate.minusDays(1);
+                startDate = startDate.minusDays(1);
+            }
+        } else if (timeframe == Timeframe.WEEKLY) {
+            DateMidnight endDate = new DateMidnight().plusDays(1);
+            DateMidnight startDate = endDate.minusDays(8);
 
-			for (int i=0; i < bars; i++) {
-				double total = 0;
-				Cursor data = mDatabase.getLastData(startDate.toString(pattern),
+            for (int i=0; i < bars; i++) {
+                double total = 0;
+                Cursor data = mDatabase.getLastData(startDate.toString(pattern),
                         endDate.toString(pattern), column);
-				total = calculateData(data, average);
+                total = calculateData(data, average);
 
-				series.add(startDate.getWeekOfWeekyear(), total);
+                series.add(startDate.getWeekOfWeekyear(), total);
 
-				endDate = endDate.minusDays(7);
-				startDate = startDate.minusDays(7);
-			}
-		} else if (timeframe == Timeframe.MONTHLY) {
-			DateMidnight endDate = new DateMidnight().plusMonths(1);
-			DateMidnight startDate = endDate.minusMonths(2);
+                endDate = endDate.minusDays(7);
+                startDate = startDate.minusDays(7);
+            }
+        } else if (timeframe == Timeframe.MONTHLY) {
+            DateMidnight endDate = new DateMidnight().plusMonths(1);
+            DateMidnight startDate = endDate.minusMonths(2);
 
-			for (int i=0; i < bars; i++) {
-				double total = 0;
-				Cursor data = mDatabase.getLastData(startDate.toString(pattern),
+            for (int i=0; i < bars; i++) {
+                double total = 0;
+                Cursor data = mDatabase.getLastData(startDate.toString(pattern),
                         endDate.toString(pattern), column);
-				total = calculateData(data, average);
+                total = calculateData(data, average);
 
-				series.add(startDate.getMonthOfYear() + 1, total);
+                series.add(startDate.getMonthOfYear() + 1, total);
 
-				endDate = endDate.minusMonths(1);
-				startDate = startDate.minusMonths(1);
-			}
-		} else if (timeframe == Timeframe.PER_TRIP) {
-			Cursor data = mDatabase.getLastData(bars, column);
-			if(data.moveToLast()) {
+                endDate = endDate.minusMonths(1);
+                startDate = startDate.minusMonths(1);
+            }
+        } else if (timeframe == Timeframe.PER_TRIP) {
+            Cursor data = mDatabase.getLastData(bars, column);
+            if(data.moveToLast()) {
                 for (int i=1; i < data.getCount(); i++) {
                     series.add(i, data.getDouble(0));
                     data.moveToPrevious();
                 }
                 data.close();
             }
-		} else {
+        } else {
             Log.w(TAG, "Unknown timeframe: " + timeframe);
         }
-		return series;
-	}
+        return series;
+    }
 
-	private double calculateData(Cursor data, boolean average) {
-		double total = 0;
+    private double calculateData(Cursor data, boolean average) {
+        double total = 0;
         if(data.moveToFirst()) {
             for (int x=0; x < data.getCount(); x++) {
                 double fuel = data.getDouble(0);
@@ -198,6 +186,6 @@ public class HistoricalChartFragment extends ChartFragment {
             }
             data.close();
         }
-		return total;
-	}
+        return total;
+    }
 }
