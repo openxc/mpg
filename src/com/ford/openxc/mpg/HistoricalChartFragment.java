@@ -55,7 +55,7 @@ public class HistoricalChartFragment extends ChartFragment {
         renderer.setApplyBackgroundColor(true);
         renderer.setBackgroundColor(Color.argb(1000, 50, 50, 50));
         renderer.setYTitle(series.getTitle());
-		renderer.setLabelsTextSize(25);
+        renderer.setLabelsTextSize(25);
         renderer.setShowGrid(true);
         renderer.setBarSpacing(0.05);
         renderer.setAntialiasing(true);

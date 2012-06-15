@@ -45,29 +45,29 @@ import com.openxc.remote.VehicleServiceException;
 
 public class MpgActivity extends FragmentActivity
         implements TextToSpeech.OnInitListener {
-	private final static String TAG = "MpgActivity";
-	private final static int CAN_TIMEOUT = 30;
+    private final static String TAG = "MpgActivity";
+    private final static int CAN_TIMEOUT = 30;
 
-	private boolean mIsRecording = false;
+    private boolean mIsRecording = false;
 
-	private long mStartTime = -1;
-	private double mLastGasCount = 0;
-	private double mLastOdoCount = 0;
-	private double mLastMPG = 0;
-	private double mLastSpeed = 0;
+    private long mStartTime = -1;
+    private double mLastGasCount = 0;
+    private double mLastOdoCount = 0;
+    private double mLastMPG = 0;
+    private double mLastSpeed = 0;
 
-	private SharedPreferences sharedPrefs;
+    private SharedPreferences sharedPrefs;
     private IgnitionPosition mLastIgnitionPosition;
-	private VehicleManager mVehicle;
-	private DbHelper mDatabase;
+    private VehicleManager mVehicle;
+    private DbHelper mDatabase;
     private MeasurementUpdater mMeasurementUpdater;
     private ViewPager mViewPager;
     private TabsAdapter mTabsAdapter;
     private boolean TTSReady = false;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         mViewPager = new ViewPager(this);
         mViewPager.setId(R.id.pager);
@@ -99,80 +99,80 @@ public class MpgActivity extends FragmentActivity
             bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
 
-		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		Intent intent = new Intent(this, VehicleManager.class);
-		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        Intent intent = new Intent(this, VehicleManager.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-		mDatabase = new DbHelper(this);
+        mDatabase = new DbHelper(this);
 
         Intent checkIntent = new Intent();
         checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
         startActivityForResult(checkIntent, 1337);
-	}
-
-	@Override
-    public boolean dispatchKeyEvent(KeyEvent ev) {
-    	if(ev.getAction() == KeyEvent.ACTION_DOWN){
-    		if(ev.getKeyCode() == KeyEvent.KEYCODE_1) {
-                mViewPager.setCurrentItem(0);
-    			return true;
-    		} else if(ev.getKeyCode() == KeyEvent.KEYCODE_2) {
-                mViewPager.setCurrentItem(1);
-    			return true;
-    		} else if (ev.getKeyCode() == KeyEvent.KEYCODE_5) {
-    			if(TTSReady) {
-    				int CurrentChart = mViewPager.getCurrentItem();
-    				if(CurrentChart == 0){
-    					long roundedSpeed = Math.round(mLastSpeed);
-        				String strMPG = roundedSpeed + "miles per hour";
-        				mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
-    				} else {
-    					
-        				long roundedMPG = Math.round(mLastMPG);
-        				String strMPG = roundedMPG + "miles per gallon";
-        				mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
-    				}
-    			} else {
-    				Log.e(TAG, "Text to speech called before initialized.");
-    			}
-    		}
-    	}
-    	return super.dispatchKeyEvent(ev);
     }
 
-	private TextToSpeech mTts;
-	protected void onActivityResult(
-	        int requestCode, int resultCode, Intent data) {
-		Log.i(TAG, "onActivityResult called.");
-	    if (requestCode == 1337) {
-	        if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
-	            // success, create the TTS instance
-	            mTts = new TextToSpeech(this, (OnInitListener) this);
-	            Log.i(TAG, "TTS object created!");
-	        } else {
-	            // missing data, install it
-	        	Log.i(TAG, "No TTS data!  Install!");
-	            Intent installIntent = new Intent();
-	            installIntent.setAction(
-	                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-	            startActivity(installIntent);
-	        }
-	    }
-	}
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent ev) {
+        if(ev.getAction() == KeyEvent.ACTION_DOWN){
+            if(ev.getKeyCode() == KeyEvent.KEYCODE_1) {
+                mViewPager.setCurrentItem(0);
+                return true;
+            } else if(ev.getKeyCode() == KeyEvent.KEYCODE_2) {
+                mViewPager.setCurrentItem(1);
+                return true;
+            } else if (ev.getKeyCode() == KeyEvent.KEYCODE_5) {
+                if(TTSReady) {
+                    int CurrentChart = mViewPager.getCurrentItem();
+                    if(CurrentChart == 0){
+                        long roundedSpeed = Math.round(mLastSpeed);
+                        String strMPG = roundedSpeed + "miles per hour";
+                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+                    } else {
 
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putLong("time", mStartTime);
-		outState.putBoolean("isRecording", mIsRecording);
+                        long roundedMPG = Math.round(mLastMPG);
+                        String strMPG = roundedMPG + "miles per gallon";
+                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+                    }
+                } else {
+                    Log.e(TAG, "Text to speech called before initialized.");
+                }
+            }
+        }
+        return super.dispatchKeyEvent(ev);
+    }
+
+    private TextToSpeech mTts;
+    protected void onActivityResult(
+            int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult called.");
+        if (requestCode == 1337) {
+            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+                // success, create the TTS instance
+                mTts = new TextToSpeech(this, (OnInitListener) this);
+                Log.i(TAG, "TTS object created!");
+            } else {
+                // missing data, install it
+                Log.i(TAG, "No TTS data!  Install!");
+                Intent installIntent = new Intent();
+                installIntent.setAction(
+                    TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                startActivity(installIntent);
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong("time", mStartTime);
+        outState.putBoolean("isRecording", mIsRecording);
         outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
-	}
+    }
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		Log.i(TAG, "onDestroy called");
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy called");
         mDatabase.close();
         stopMeasurementUpdater();
         try {
@@ -184,69 +184,69 @@ public class MpgActivity extends FragmentActivity
         if(mTts != null) {
             mTts.shutdown();
         }
-	}
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.menu, menu);
-		return super.onCreateOptionsMenu(menu);
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		Log.i(TAG, "Option Selected "+item.getItemId());
-		switch (item.getItemId()) {
-		case R.id.settings:
-			startActivity(new Intent(this, ShowSettingsActivity.class));
-			break;
-		case R.id.close:
-			System.exit(0);
-			break;
-		case R.id.checkpoint:
-			recordCheckpoint();
-			break;
-		case R.id.viewOverview:
-			startActivity(new Intent(this, OverviewActivity.class));
-			break;
-		case R.id.createData:
-			mDatabase.createTestData(100);
-			break;
-		case R.id.viewGraphs:
-			startActivity(new Intent(this, MileageActivity.class));
-		}
-		return super.onOptionsItemSelected(item);
-	}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.i(TAG, "Option Selected "+item.getItemId());
+        switch (item.getItemId()) {
+        case R.id.settings:
+            startActivity(new Intent(this, ShowSettingsActivity.class));
+            break;
+        case R.id.close:
+            System.exit(0);
+            break;
+        case R.id.checkpoint:
+            recordCheckpoint();
+            break;
+        case R.id.viewOverview:
+            startActivity(new Intent(this, OverviewActivity.class));
+            break;
+        case R.id.createData:
+            mDatabase.createTestData(100);
+            break;
+        case R.id.viewGraphs:
+            startActivity(new Intent(this, MileageActivity.class));
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-	public ServiceConnection mConnection = new ServiceConnection() {
+    public ServiceConnection mConnection = new ServiceConnection() {
 
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			mVehicle = null;
-			Log.i(TAG, "Service unbound");
-		}
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mVehicle = null;
+            Log.i(TAG, "Service unbound");
+        }
 
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			VehicleBinder binder = (VehicleBinder) service;
-			mVehicle = binder.getService();
-			Log.i(TAG, "Remote Vehicle Service bound");
-			try {
-				mVehicle.addListener(IgnitionStatus.class, ignitionListener);
-			} catch (VehicleServiceException e) {
-				e.printStackTrace();
-			} catch (UnrecognizedMeasurementTypeException e) {
-				e.printStackTrace();
-			}
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            VehicleBinder binder = (VehicleBinder) service;
+            mVehicle = binder.getService();
+            Log.i(TAG, "Remote Vehicle Service bound");
+            try {
+                mVehicle.addListener(IgnitionStatus.class, ignitionListener);
+            } catch (VehicleServiceException e) {
+                e.printStackTrace();
+            } catch (UnrecognizedMeasurementTypeException e) {
+                e.printStackTrace();
+            }
             startMeasurementUpdater();
-		}
-	};
+        }
+    };
 
-	IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
-		@Override
-		public void receive(Measurement arg0) {
-			IgnitionPosition ignitionPosition =
-					((IgnitionStatus) arg0).getValue().enumValue();
+    IgnitionStatus.Listener ignitionListener = new IgnitionStatus.Listener() {
+        @Override
+        public void receive(Measurement arg0) {
+            IgnitionPosition ignitionPosition =
+                    ((IgnitionStatus) arg0).getValue().enumValue();
             if(ignitionPosition == IgnitionPosition.RUN ||
                     ignitionPosition == IgnitionPosition.OFF) {
                 Log.d(TAG, "Ignition is " + ignitionPosition +
@@ -263,8 +263,8 @@ public class MpgActivity extends FragmentActivity
                 }
                 mLastIgnitionPosition = ignitionPosition;
             }
-		}
-	};
+        }
+    };
 
     // TODO this is really ugly, we have to copy this private function from the
     // pager adapter to figure out how it registers our fragments
@@ -272,7 +272,7 @@ public class MpgActivity extends FragmentActivity
             return "android:switcher:" + R.id.pager + ":" + pos;
     }
 
-	private void drawGraph(double time, double mpg, double speed) {
+    private void drawGraph(double time, double mpg, double speed) {
         ChartFragment fragment = (ChartFragment) getSupportFragmentManager().
             findFragmentByTag(getFragmentTag(1));
         if(fragment != null) {
@@ -288,7 +288,7 @@ public class MpgActivity extends FragmentActivity
         } else {
             Log.d(TAG, "Unable to load mpg chart fragment");
         }
-	}
+    }
 
     private class MeasurementUpdater extends Thread {
         private boolean mRunning = true;
@@ -299,7 +299,7 @@ public class MpgActivity extends FragmentActivity
 
         public void run() {
             while(mRunning) {
-                if (checkForCANFresh())	{
+                if (checkForCANFresh()) {
                     getMeasurements();
                 }
 
@@ -316,87 +316,87 @@ public class MpgActivity extends FragmentActivity
         }
     }
 
-	private double getSpeed() {
-		VehicleSpeed speed;
-		double temp = -1;
-		try {
-			speed = (VehicleSpeed) mVehicle.get(VehicleSpeed.class);
-			temp = speed.getValue().doubleValue();
-		} catch (UnrecognizedMeasurementTypeException e) {
-			e.printStackTrace();
-		} catch (NoValueException e) {
-			Log.w(TAG, "Failed to get speed measurement");
-		}
-		return temp;
-	}
+    private double getSpeed() {
+        VehicleSpeed speed;
+        double temp = -1;
+        try {
+            speed = (VehicleSpeed) mVehicle.get(VehicleSpeed.class);
+            temp = speed.getValue().doubleValue();
+        } catch (UnrecognizedMeasurementTypeException e) {
+            e.printStackTrace();
+        } catch (NoValueException e) {
+            Log.w(TAG, "Failed to get speed measurement");
+        }
+        return temp;
+    }
 
-	private double getFineOdometer() {
-		FineOdometer fineOdo;
-		double temp = -1;
-		try {
-			fineOdo = (FineOdometer) mVehicle.get(FineOdometer.class);
-			temp = fineOdo.getValue().doubleValue();
-		} catch (UnrecognizedMeasurementTypeException e) {
-			e.printStackTrace();
-		} catch (NoValueException e) {
-			Log.w(TAG, "Failed to get fine odometer measurement");
-		}
+    private double getFineOdometer() {
+        FineOdometer fineOdo;
+        double temp = -1;
+        try {
+            fineOdo = (FineOdometer) mVehicle.get(FineOdometer.class);
+            temp = fineOdo.getValue().doubleValue();
+        } catch (UnrecognizedMeasurementTypeException e) {
+            e.printStackTrace();
+        } catch (NoValueException e) {
+            Log.w(TAG, "Failed to get fine odometer measurement");
+        }
 
-		return temp;
-	}
+        return temp;
+    }
 
-	private double getGasConsumed() {
-		FuelConsumed fuel;
-		double temp = 0;
-		try {
-			fuel = (FuelConsumed) mVehicle.get(FuelConsumed.class);
-			temp = fuel.getValue().doubleValue();
-		} catch (UnrecognizedMeasurementTypeException e) {
-			e.printStackTrace();
-		} catch (NoValueException e) {
-			Log.w(TAG, "Failed to get fuel measurement");
-		}
+    private double getGasConsumed() {
+        FuelConsumed fuel;
+        double temp = 0;
+        try {
+            fuel = (FuelConsumed) mVehicle.get(FuelConsumed.class);
+            temp = fuel.getValue().doubleValue();
+        } catch (UnrecognizedMeasurementTypeException e) {
+            e.printStackTrace();
+        } catch (NoValueException e) {
+            Log.w(TAG, "Failed to get fuel measurement");
+        }
 
-		return temp;
-	}
+        return temp;
+    }
 
-	private boolean checkForCANFresh() {
-		try {
-			VehicleSpeed measurement = (VehicleSpeed) mVehicle.get(
+    private boolean checkForCANFresh() {
+        try {
+            VehicleSpeed measurement = (VehicleSpeed) mVehicle.get(
                     VehicleSpeed.class);
-			if (measurement.getAge() < CAN_TIMEOUT) {
+            if (measurement.getAge() < CAN_TIMEOUT) {
                 return true;
             }
-		} catch (UnrecognizedMeasurementTypeException e) {
-			e.printStackTrace();
-		} catch (NoValueException e) {
-			Log.e(TAG, "Unable to check for vehicle measurements", e);
-		}
-		return false;
-	}
+        } catch (UnrecognizedMeasurementTypeException e) {
+            e.printStackTrace();
+        } catch (NoValueException e) {
+            Log.e(TAG, "Unable to check for vehicle measurements", e);
+        }
+        return false;
+    }
 
-	private void getMeasurements() {
-		double speedm = getSpeed();
-		double fineOdo = getFineOdometer();
-		double gas = getGasConsumed();
+    private void getMeasurements() {
+        double speedm = getSpeed();
+        double fineOdo = getFineOdometer();
+        double gas = getGasConsumed();
 
-		speedm *= 0.62137;  //Converting from kph to mph
-		mLastSpeed = speedm;
-		fineOdo *= 0.62137; //Converting from km to miles.
-		gas *= 0.26417;  //Converting from L to Gal
+        speedm *= 0.62137;  //Converting from kph to mph
+        mLastSpeed = speedm;
+        fineOdo *= 0.62137; //Converting from km to miles.
+        gas *= 0.26417;  //Converting from L to Gal
 
-		double currentGas = gas - mLastGasCount;
-		mLastGasCount = gas;
-		double currentDistance = fineOdo - mLastOdoCount;
-		mLastOdoCount = fineOdo;
+        double currentGas = gas - mLastGasCount;
+        mLastGasCount = gas;
+        double currentDistance = fineOdo - mLastOdoCount;
+        mLastOdoCount = fineOdo;
 
-		if(gas > 0.0) {
-			mLastMPG = currentDistance / currentGas;  //miles per hour
-			drawGraph(getTime(), mLastMPG, speedm);
-		} else {
-			drawGraph(getTime(), 0.0, speedm);
-		}
-	}
+        if(gas > 0.0) {
+            mLastMPG = currentDistance / currentGas;  //miles per hour
+            drawGraph(getTime(), mLastMPG, speedm);
+        } else {
+            drawGraph(getTime(), 0.0, speedm);
+        }
+    }
 
     private void startMeasurementUpdater() {
         stopMeasurementUpdater();
@@ -413,12 +413,12 @@ public class MpgActivity extends FragmentActivity
         mIsRecording = false;
     }
 
-	private long getTime() {
-		Time curTime = new Time();
-		curTime.setToNow();
-		long time = curTime.toMillis(false);
-		return time;
-	}
+    private long getTime() {
+        Time curTime = new Time();
+        curTime.setToNow();
+        long time = curTime.toMillis(false);
+        return time;
+    }
 
     private ActionBar.TabListener mTabListener = new ActionBar.TabListener() {
         public void onTabSelected(ActionBar.Tab tab,
@@ -435,29 +435,29 @@ public class MpgActivity extends FragmentActivity
                 FragmentTransaction ft) { }
     };
 
-	private void recordCheckpoint() {
-		try {
-			FineOdometer oMeas = (FineOdometer) mVehicle.get(
+    private void recordCheckpoint() {
+        try {
+            FineOdometer oMeas = (FineOdometer) mVehicle.get(
                     FineOdometer.class);
-			final double distanceTravelled = oMeas.getValue().doubleValue();
-			FuelConsumed fMeas = (FuelConsumed) mVehicle.get(
+            final double distanceTravelled = oMeas.getValue().doubleValue();
+            FuelConsumed fMeas = (FuelConsumed) mVehicle.get(
                     FuelConsumed.class);
-			final double fuelConsumed = fMeas.getValue().doubleValue();
-			final double gasMileage = distanceTravelled/fuelConsumed;
-			double endTime = getTime();
+            final double fuelConsumed = fMeas.getValue().doubleValue();
+            final double gasMileage = distanceTravelled/fuelConsumed;
+            double endTime = getTime();
             // TODO need to handle start/end times
-			mDatabase.saveResults(distanceTravelled, fuelConsumed, gasMileage,
+            mDatabase.saveResults(distanceTravelled, fuelConsumed, gasMileage,
                     endTime, endTime);
-		} catch (UnrecognizedMeasurementTypeException e) {
-			e.printStackTrace();
-		} catch (NoValueException e) {
-			e.printStackTrace();
-		}
-	}
+        } catch (UnrecognizedMeasurementTypeException e) {
+            e.printStackTrace();
+        } catch (NoValueException e) {
+            e.printStackTrace();
+        }
+    }
 
-	@Override
-	public void onInit(int status) {
-		Log.i(TAG, "Text to speech finished initializing.");
-		TTSReady = true;
-	}
+    @Override
+    public void onInit(int status) {
+        Log.i(TAG, "Text to speech finished initializing.");
+        TTSReady = true;
+    }
 }

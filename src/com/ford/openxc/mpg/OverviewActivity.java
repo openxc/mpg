@@ -14,8 +14,8 @@ public class OverviewActivity extends FragmentActivity {
     private static final String TAG = "OverviewActivity";
     private ActionBar mActionBar;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "Created OverviewActivity");
         setContentView(R.layout.overview);
@@ -36,7 +36,7 @@ public class OverviewActivity extends FragmentActivity {
         if(savedInstanceState != null) {
             mActionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
-	}
+    }
 
     private ActionBar.TabListener mTabListener = new ActionBar.TabListener() {
         public void onTabSelected(ActionBar.Tab tab,
