@@ -171,7 +171,7 @@ public class HistoricalChartFragment extends ChartFragment {
         } else if (timeframe == Timeframe.PER_TRIP) {
             Cursor data = mDatabase.getLastData(bars, column);
             if(data.moveToLast()) {
-                for (int i=1; i < data.getCount(); i++) {
+                for (int i = data.getCount() - 1; i > 0; i--) {
                     series.add(i, data.getDouble(0));
                     mRenderer.addXTextLabel(i, "" + i);
                     data.moveToPrevious();

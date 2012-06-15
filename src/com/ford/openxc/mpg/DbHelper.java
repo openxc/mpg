@@ -88,7 +88,8 @@ public class DbHelper extends SQLiteOpenHelper {
         String num = Integer.toString(numOfData);
         SQLiteDatabase db = getReadableDatabase();
         String[] colToFetch = {col};
-        Cursor c = db.query(TABLE, colToFetch, null, null, null, null, DbHelper.C_TIME+" DESC", num);
+        Cursor c = db.query(TABLE, colToFetch, null, null, null, null,
+                DbHelper.C_TIME + " DESC", num);
         return c;
     }
 }
