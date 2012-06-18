@@ -40,30 +40,32 @@ public class OverviewActivity extends FragmentActivity {
             mActionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
     }
-    
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-    	if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-            if (event.getAction() == KeyEvent.ACTION_UP) {
-            	Log.i(TAG, "Dpad right, key up.");
-            	int CurrentSelection = mActionBar.getSelectedNavigationIndex();
-            	if((CurrentSelection >= 0) && (CurrentSelection <= 2)) {
-	            	mActionBar.setSelectedNavigationItem(CurrentSelection + 1);
-            	}
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            int currentSelection = mActionBar.getSelectedNavigationIndex();
+            switch(event.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    Log.i(TAG, "Dpad right, key up.");
+                    if((currentSelection >= 0) && (currentSelection <= 2)) {
+                        mActionBar.setSelectedNavigationItem(currentSelection + 1);
+                    }
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                    Log.i(TAG, "Dpad left, key up.");
+                    if((currentSelection >= 1) && (currentSelection <= 3)) {
+                        mActionBar.setSelectedNavigationItem(currentSelection - 1);
+                    } else if (currentSelection == 0) {
+                        finish();
+                    }
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_UP:
+                    startActivity(new Intent(this, MpgActivity.class));
+                    return true;
             }
             return true;
-    	} else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-            if (event.getAction() == KeyEvent.ACTION_UP) {
-            	Log.i(TAG, "Dpad left, key up.");
-            	int CurrentSelection = mActionBar.getSelectedNavigationIndex();
-            	if((CurrentSelection >= 1) && (CurrentSelection <= 3)) {
-	            	mActionBar.setSelectedNavigationItem(CurrentSelection - 1);
-            	} else if (CurrentSelection == 0) {
-            		finish();
-            	}
-            }
-            return true;
-    	} 
+    	}
     	return super.dispatchKeyEvent(event);
     }
 
