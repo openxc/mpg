@@ -114,38 +114,45 @@ public class MpgActivity extends FragmentActivity
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_UP) {
-            switch(event.getKeyCode()) {
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    Log.i(TAG, "Dpad right, key up.");
-                    mViewPager.setCurrentItem(1);
-                    return true;
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                    Log.i(TAG, "Dpad left, key up.");
-                	mViewPager.setCurrentItem(0);
-                    return true;
-                case KeyEvent.KEYCODE_DPAD_DOWN:
-                    startActivity(new Intent(this, OverviewActivity.class));
-                    return true;
-                case KeyEvent.KEYCODE_5:
-                    if(TTSReady) {
-                        if(mViewPager.getCurrentItem() == 0){
-                            long roundedSpeed = Math.round(mLastSpeed);
-                            String strMPG = roundedSpeed + "miles per hour";
-                            mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
-                        } else {
-
-                            long roundedMPG = Math.round(mLastMPG);
-                            String strMPG = roundedMPG + "miles per gallon";
-                            mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
-                        }
-                    } else {
-                        Log.e(TAG, "Text to speech called before initialized.");
-                    }
-                    return true;
+    	//We need to intercept every event that goes with the KEYCODE we're looking for.  
+    	//Stopping some events and letting others through creates funky behavior.
+        switch(event.getKeyCode()) {
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+            	if (event.getAction() == KeyEvent.ACTION_UP) {
+            		Log.i(TAG, "Dpad right, key up.");
+            		mViewPager.setCurrentItem(1);
+            	}
+                return true;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+            	if (event.getAction() == KeyEvent.ACTION_UP) {
+            		Log.i(TAG, "Dpad left, key up.");
+            		mViewPager.setCurrentItem(0);
+            	}
+                return true;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+            	if (event.getAction() == KeyEvent.ACTION_UP) {
+            		startActivity(new Intent(this, OverviewActivity.class));
+            	}
+                return true;
+            case KeyEvent.KEYCODE_5:
+            	if (event.getAction() == KeyEvent.ACTION_UP) {
+	                if(TTSReady) {
+	                    if(mViewPager.getCurrentItem() == 0){
+	                        long roundedSpeed = Math.round(mLastSpeed);
+	                        String strMPG = roundedSpeed + "miles per hour";
+	                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+	                    } else {
+	
+	                        long roundedMPG = Math.round(mLastMPG);
+	                        String strMPG = roundedMPG + "miles per gallon";
+	                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+	                    }
+	                } else {
+	                    Log.e(TAG, "Text to speech called before initialized.");
+	                }
+            	}
+                return true;
             }
-            return true;
-    	}
     	return super.dispatchKeyEvent(event);
     }
 

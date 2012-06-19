@@ -43,29 +43,34 @@ public class OverviewActivity extends FragmentActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_UP) {
-            int currentSelection = mActionBar.getSelectedNavigationIndex();
-            switch(event.getKeyCode()) {
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    Log.i(TAG, "Dpad right, key up.");
-                    if((currentSelection >= 0) && (currentSelection <= 2)) {
-                        mActionBar.setSelectedNavigationItem(currentSelection + 1);
-                    }
-                    return true;
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                    Log.i(TAG, "Dpad left, key up.");
-                    if((currentSelection >= 1) && (currentSelection <= 3)) {
-                        mActionBar.setSelectedNavigationItem(currentSelection - 1);
-                    } else if (currentSelection == 0) {
-                        finish();
-                    }
-                    return true;
-                case KeyEvent.KEYCODE_DPAD_UP:
-                    startActivity(new Intent(this, MpgActivity.class));
-                    return true;
-            }
-            return true;
-    	}
+    	//We need to intercept every event that goes with the KEYCODE we're looking for.  
+    	//Stopping some events and letting others through creates funky behavior.
+        int currentSelection = mActionBar.getSelectedNavigationIndex();
+        switch(event.getKeyCode()) {
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+            	if (event.getAction() == KeyEvent.ACTION_UP) {
+            		Log.i(TAG, "Dpad right, key up.");
+            		if((currentSelection >= 0) && (currentSelection <= 2)) {
+            			mActionBar.setSelectedNavigationItem(currentSelection + 1);
+            		}
+            	}
+                return true;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+            	if (event.getAction() == KeyEvent.ACTION_UP) {
+            		Log.i(TAG, "Dpad left, key up.");
+            		if((currentSelection >= 1) && (currentSelection <= 3)) {
+            			mActionBar.setSelectedNavigationItem(currentSelection - 1);
+            		} else if (currentSelection == 0) {
+            			finish();
+            		}
+            	}
+                return true;
+            case KeyEvent.KEYCODE_DPAD_UP:
+            	if (event.getAction() == KeyEvent.ACTION_UP) {
+            		startActivity(new Intent(this, MpgActivity.class));
+            	}
+                return true;
+        }
     	return super.dispatchKeyEvent(event);
     }
 
