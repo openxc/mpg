@@ -1,9 +1,13 @@
 package com.ford.openxc.mpg;
 
-import android.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
-import android.app.ActionBar.Tab;
-import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -13,17 +17,14 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 
-import android.support.v4.app.FragmentActivity;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import android.support.v4.view.ViewPager;
+import android.support.v4.app.FragmentTransaction;
 
 import com.openxc.VehicleManager;
 import com.openxc.VehicleManager.VehicleBinder;
@@ -43,7 +44,7 @@ import com.openxc.remote.VehicleServiceException;
  * Fix getLastData
  */
 
-public class MpgActivity extends FragmentActivity
+public class MpgActivity extends SherlockFragmentActivity
         implements TextToSpeech.OnInitListener {
     private final static String TAG = "MpgActivity";
     private final static int CAN_TIMEOUT = 30;
@@ -74,7 +75,7 @@ public class MpgActivity extends FragmentActivity
         mViewPager.setId(R.id.pager);
         setContentView(mViewPager);
 
-        final ActionBar bar = getActionBar();
+        final ActionBar bar = getSupportActionBar();
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
@@ -90,7 +91,7 @@ public class MpgActivity extends FragmentActivity
             new ViewPager.SimpleOnPageChangeListener() {
                 @Override
                 public void onPageSelected(int position) {
-                    getActionBar().setSelectedNavigationItem(position);
+                    getSupportActionBar().setSelectedNavigationItem(position);
                 }
             });
 
@@ -114,8 +115,9 @@ public class MpgActivity extends FragmentActivity
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-    	//We need to intercept every event that goes with the KEYCODE we're looking for.  
-    	//Stopping some events and letting others through creates funky behavior.
+        // We need to intercept every event that goes with the KEYCODE we're
+        // looking for.  Stopping some events and letting others through creates
+        // funky behavior.
         switch(event.getKeyCode()) {
             case KeyEvent.KEYCODE_DPAD_RIGHT:
             	if (event.getAction() == KeyEvent.ACTION_UP) {
@@ -142,7 +144,7 @@ public class MpgActivity extends FragmentActivity
 	                        String strMPG = roundedSpeed + "miles per hour";
 	                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
 	                    } else {
-	
+
 	                        long roundedMPG = Math.round(mLastMPG);
 	                        String strMPG = roundedMPG + "miles per gallon";
 	                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
@@ -181,7 +183,8 @@ public class MpgActivity extends FragmentActivity
         super.onSaveInstanceState(outState);
         outState.putLong("time", mStartTime);
         outState.putBoolean("isRecording", mIsRecording);
-        outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
+        outState.putInt("tab",
+                getSupportActionBar().getSelectedNavigationIndex());
     }
 
     @Override
@@ -203,7 +206,7 @@ public class MpgActivity extends FragmentActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+        MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         return super.onCreateOptionsMenu(menu);
     }

@@ -1,19 +1,22 @@
 package com.ford.openxc.mpg;
 
-import android.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
 
-import android.app.ActionBar.Tab;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 
 import android.speech.tts.TextToSpeech;
-import android.support.v4.app.FragmentActivity;
+
+import android.support.v4.app.FragmentTransaction;
 
 import android.util.Log;
 import android.view.KeyEvent;
 
-public class OverviewActivity extends FragmentActivity {
+public class OverviewActivity extends SherlockFragmentActivity {
     private static final String TAG = "OverviewActivity";
     private ActionBar mActionBar;
 
@@ -23,7 +26,7 @@ public class OverviewActivity extends FragmentActivity {
         Log.i(TAG, "Created OverviewActivity");
         setContentView(R.layout.overview);
 
-        mActionBar = getActionBar();
+        mActionBar = getSupportActionBar();
         mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         mActionBar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
@@ -43,7 +46,7 @@ public class OverviewActivity extends FragmentActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-    	//We need to intercept every event that goes with the KEYCODE we're looking for.  
+    	//We need to intercept every event that goes with the KEYCODE we're looking for.
     	//Stopping some events and letting others through creates funky behavior.
         int currentSelection = mActionBar.getSelectedNavigationIndex();
         switch(event.getKeyCode()) {

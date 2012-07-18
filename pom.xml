@@ -57,6 +57,12 @@
             <artifactId>achartengine</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.actionbarsherlock</groupId>
+            <artifactId>library</artifactId>
+            <version>4.1.0</version>
+            <type>apklib</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -124,7 +130,7 @@
                         </jvmArguments>
                     </dex>
                     <sdk>
-                        <platform>12</platform>
+                        <platform>16</platform>
                     </sdk>
                     <undeployBeforeDeploy>true</undeployBeforeDeploy>
                     <testDebug>false</testDebug>

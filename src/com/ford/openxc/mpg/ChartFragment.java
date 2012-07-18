@@ -6,6 +6,8 @@ import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.tools.PanListener;
 
+import com.actionbarsherlock.app.SherlockFragment;
+
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,12 +20,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.support.v4.app.Fragment;
-
 import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYSeriesRenderer;
 
-public class ChartFragment extends Fragment {
+public class ChartFragment extends SherlockFragment {
     protected XYSeries mSeries;
     protected XYMultipleSeriesRenderer mRenderer;
     protected GraphicalView mChartView;

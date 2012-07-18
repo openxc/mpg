@@ -2,11 +2,9 @@ package com.ford.openxc.mpg;
 
 import java.util.ArrayList;
 
-import android.app.ActionBar;
-
-import android.app.ActionBar.Tab;
-
-import android.app.FragmentTransaction;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 import android.content.Context;
 
@@ -15,6 +13,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 
 import android.support.v4.view.ViewPager;
 
@@ -35,10 +34,10 @@ public class TabsAdapter extends FragmentPagerAdapter
         }
     }
 
-    public TabsAdapter(FragmentActivity activity, ViewPager pager) {
+    public TabsAdapter(SherlockFragmentActivity activity, ViewPager pager) {
         super(activity.getSupportFragmentManager());
         mContext = activity;
-        mActionBar = activity.getActionBar();
+        mActionBar = activity.getSupportActionBar();
         mViewPager = pager;
         mViewPager.setAdapter(this);
         mViewPager.setOnPageChangeListener(this);
