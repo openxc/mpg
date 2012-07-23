@@ -234,8 +234,6 @@ public class MpgActivity extends SherlockFragmentActivity
         case R.id.createData:
             mDatabase.createTestData(100);
             break;
-        case R.id.viewGraphs:
-            startActivity(new Intent(this, MileageActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }

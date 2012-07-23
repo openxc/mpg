@@ -17,7 +17,6 @@
     <string name="labelGas">Gas Used: </string>
     <string name="labelLength">Length of trip: </string>
     <string name="createDataTitle">Create Data</string>
-    <string name="viewGraphs">View Graphs</string>
     <string name="currentUsage">00</string>
     <string name="lastUsage">00</string>
     <string name="lYesterday">Yesterday\'s Usage: </string>

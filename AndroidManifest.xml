@@ -21,7 +21,6 @@
         </activity>
 
         <activity android:name=".ShowSettingsActivity" />
-        <activity android:name=".MileageActivity" />
         <activity android:name=".OverviewActivity" />
 
         <service android:name="com.openxc.VehicleManager"/>
