@@ -23,9 +23,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
@@ -141,25 +138,6 @@ public class MileageActivity extends Activity {
         dataDistance.setText(data[3]+" km");
 
         super.onPrepareDialog(id, d);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu2, menu);
-        EditText startDate = (EditText) menu.findItem(R.id.dateRefine).getActionView();
-        startDate.setText("None set");
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.dateRefine:
-            Log.i(TAG, "date refine clicked!");
-
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private TimeSeries populateSeries(TimeSeries data) {
