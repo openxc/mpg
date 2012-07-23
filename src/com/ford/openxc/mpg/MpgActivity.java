@@ -1,5 +1,7 @@
 package com.ford.openxc.mpg;
 
+import java.net.URI;
+
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.app.ActionBar;
@@ -35,6 +37,8 @@ import com.openxc.measurements.IgnitionStatus.IgnitionPosition;
 import com.openxc.measurements.UnrecognizedMeasurementTypeException;
 import com.openxc.measurements.Measurement;
 import com.openxc.measurements.VehicleSpeed;
+import com.openxc.sources.trace.TraceVehicleDataSource;
+import com.openxc.sources.DataSourceException;
 import com.openxc.NoValueException;
 import com.openxc.remote.VehicleServiceException;
 
@@ -257,6 +261,19 @@ public class MpgActivity extends SherlockFragmentActivity
                 e.printStackTrace();
             }
             startMeasurementUpdater();
+
+            if (sharedPrefs.getBoolean("use_trace_file", false)) {
+                Log.i(TAG, "Using trace file");
+                try {
+                    mVehicle.addSource(new TraceVehicleDataSource(
+                                MpgActivity.this,
+                                new URI("file:///sdcard/openxc/driving.json")));
+                } catch (java.net.URISyntaxException e) {
+                    Log.e(TAG, "Unable to load trace file", e);
+                } catch(DataSourceException e) {
+                    Log.e(TAG, "Unable to load trace file", e);
+                }
+            }
         }
     };
 
