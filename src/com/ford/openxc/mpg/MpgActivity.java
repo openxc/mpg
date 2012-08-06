@@ -52,6 +52,7 @@ public class MpgActivity extends SherlockFragmentActivity
         implements TextToSpeech.OnInitListener {
     private final static String TAG = "MpgActivity";
     private final static int CAN_TIMEOUT = 30;
+    private final static int SPEECH_DATA_REQUEST = 0;
 
     private boolean mIsRecording = false;
 
@@ -114,7 +115,7 @@ public class MpgActivity extends SherlockFragmentActivity
 
         Intent checkIntent = new Intent();
         checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-        startActivityForResult(checkIntent, 1337);
+        startActivityForResult(checkIntent, SPEECH_DATA_REQUEST);
     }
 
     @Override
@@ -166,7 +167,7 @@ public class MpgActivity extends SherlockFragmentActivity
     protected void onActivityResult(
             int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onActivityResult called.");
-        if (requestCode == 1337) {
+        if (requestCode == SPEECH_DATA_REQUEST) {
             if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                 // success, create the TTS instance
                 mTts = new TextToSpeech(this, (OnInitListener) this);
