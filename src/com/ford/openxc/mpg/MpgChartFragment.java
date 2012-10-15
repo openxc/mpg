@@ -1,7 +1,6 @@
 package com.ford.openxc.mpg;
 
 import android.graphics.Color;
-
 import android.os.Bundle;
 
 public class MpgChartFragment extends ChartFragment {

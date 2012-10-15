@@ -3,25 +3,20 @@ package com.ford.openxc.mpg;
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
 import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.renderer.XYSeriesRenderer;
 import org.achartengine.tools.PanListener;
-
-import com.actionbarsherlock.app.SherlockFragment;
 
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-
-import android.util.Log;
-
 import android.view.LayoutInflater;
-
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.achartengine.model.XYSeries;
-import org.achartengine.renderer.XYSeriesRenderer;
+import com.actionbarsherlock.app.SherlockFragment;
 
 public class ChartFragment extends SherlockFragment {
     protected XYSeries mSeries;

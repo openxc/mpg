@@ -3,7 +3,6 @@ package com.ford.openxc.mpg;
 import org.achartengine.model.XYSeries;
 
 import android.graphics.Color;
-
 import android.os.Bundle;
 
 public class HistoricalFuelConsumptionChartFragment extends

@@ -2,14 +2,8 @@ package com.ford.openxc.mpg;
 
 import java.net.URI;
 
-import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,29 +12,31 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
-import android.support.v4.view.ViewPager;
-import android.support.v4.app.FragmentTransaction;
-
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.openxc.NoValueException;
 import com.openxc.VehicleManager;
 import com.openxc.VehicleManager.VehicleBinder;
 import com.openxc.measurements.FineOdometer;
 import com.openxc.measurements.FuelConsumed;
 import com.openxc.measurements.IgnitionStatus;
 import com.openxc.measurements.IgnitionStatus.IgnitionPosition;
-import com.openxc.measurements.UnrecognizedMeasurementTypeException;
 import com.openxc.measurements.Measurement;
+import com.openxc.measurements.UnrecognizedMeasurementTypeException;
 import com.openxc.measurements.VehicleSpeed;
-import com.openxc.sources.trace.TraceVehicleDataSource;
-import com.openxc.sources.DataSourceException;
-import com.openxc.NoValueException;
 import com.openxc.remote.VehicleServiceException;
+import com.openxc.sources.DataSourceException;
+import com.openxc.sources.trace.TraceVehicleDataSource;
 
 /* TODO: Send the range into a sharedpreferences.
  * Check on how many points before we die
