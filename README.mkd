@@ -25,6 +25,10 @@ Clone the ActionBarSherlock project somewhere:
 
     $ git clone https://github.com/JakeWharton/ActionBarSherlock.git
 
+then remove the file `ActionBarSherlock/library/libs/android-support-v4.jar`
+from the folder. Also edit `ActionBarSherlock/pom.xml` and change the value of
+`junit.version` from 4.10 to 4.8.
+
 In Eclipse, `File -> Import -> Existing Maven project` and navigate to
 `ActionBarSherlock/library` - it should detect the `pom.xml` here.
 
