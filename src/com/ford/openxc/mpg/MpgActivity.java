@@ -262,7 +262,7 @@ public class MpgActivity extends SherlockFragmentActivity
                 try {
                     mVehicle.addSource(new TraceVehicleDataSource(
                                 MpgActivity.this,
-                                new URI("file:///sdcard/openxc/driving.json")));
+                                new URI("file:///sdcard/com.openxc/trace.json")));
                 } catch (java.net.URISyntaxException e) {
                     Log.e(TAG, "Unable to load trace file", e);
                 } catch(DataSourceException e) {
@@ -304,15 +304,15 @@ public class MpgActivity extends SherlockFragmentActivity
 
     private void drawGraph(double time, double mpg, double speed) {
         ChartFragment fragment = (ChartFragment) getSupportFragmentManager().
-            findFragmentByTag(getFragmentTag(1));
+            findFragmentByTag(getFragmentTag(0)); // changed FragmentTag from 1 to 0. ZDN
         if(fragment != null) {
-            fragment.addData(time, speed);
+            fragment.addData(time, speed); 
         } else {
             Log.d(TAG, "Unable to load speed chart fragment");
         }
 
         fragment = (ChartFragment) getSupportFragmentManager().
-            findFragmentByTag(getFragmentTag(0));
+            findFragmentByTag(getFragmentTag(1)); // changed FragmentTag from 0 to 1. ZDN
         if(fragment != null) {
             fragment.addData(time, mpg);
         } else {
@@ -414,14 +414,17 @@ public class MpgActivity extends SherlockFragmentActivity
         mLastSpeed = speedm;
         fineOdo *= 0.62137; //Converting from km to miles.
         gas *= 0.26417;  //Converting from L to Gal
-
+        
         double currentGas = gas - mLastGasCount;
         mLastGasCount = gas;
         double currentDistance = fineOdo - mLastOdoCount;
         mLastOdoCount = fineOdo;
-
+        
         if(gas > 0.0) {
-            mLastMPG = currentDistance / currentGas;  //miles per hour
+            mLastMPG = currentDistance / currentGas;  //miles per gallon
+            if(mLastMPG>100){
+            	mLastMPG=100; // set max MPG to 100 miles per gallon. ZDN
+            }
             drawGraph(getTime(), mLastMPG, speedm);
         } else {
             drawGraph(getTime(), 0.0, speedm);

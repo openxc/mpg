@@ -33,7 +33,7 @@ public class ChartFragment extends SherlockFragment {
         mRenderer.setXTitle(xLabel);
         mRenderer.setYTitle(yLabel);
         mRenderer.setAxisTitleTextSize(32);
-
+        
         mRenderer.setRange(new double[] {0, 50000, 0, 100});
     }
 
