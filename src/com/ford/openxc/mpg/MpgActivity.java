@@ -304,7 +304,7 @@ public class MpgActivity extends SherlockFragmentActivity
 
     private void drawGraph(double time, double mpg, double speed) {
         ChartFragment fragment = (ChartFragment) getSupportFragmentManager().
-            findFragmentByTag(getFragmentTag(0)); // changed FragmentTag from 1 to 0. ZDN
+            findFragmentByTag(getFragmentTag(0));
         if(fragment != null) {
             fragment.addData(time, speed);
         } else {
@@ -312,7 +312,7 @@ public class MpgActivity extends SherlockFragmentActivity
         }
 
         fragment = (ChartFragment) getSupportFragmentManager().
-            findFragmentByTag(getFragmentTag(1)); // changed FragmentTag from 0 to 1. ZDN
+            findFragmentByTag(getFragmentTag(1));
         if(fragment != null) {
             fragment.addData(time, mpg);
         } else {
@@ -422,8 +422,9 @@ public class MpgActivity extends SherlockFragmentActivity
 
         if(gas > 0.0) {
             mLastMPG = currentDistance / currentGas;  //miles per gallon
-            if(mLastMPG>100){
-            	mLastMPG=100; // set max MPG to 100 miles per gallon. ZDN
+            if(mLastMPG > 100){
+                // max MPG is 100 MPG to keep the graph sane
+            	mLastMPG = 100;
             }
             drawGraph(getTime(), mLastMPG, speedm);
         } else {
