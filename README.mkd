@@ -17,7 +17,17 @@ There are two Android library project dependencies that must be imported into
 your Eclipse workspace, `openxc` and `actionbarsherlock`.
 
 Follow [these directions](http://actionbarsherlock.com/usage.html) to get
-`actionbarsherlock`.
+`actionbarsherlock`, summarized here:
+
+Grab `ActionBarSherlock`:
+
+    $ git clone https://github.com/JakeWharton/ActionBarSherlock.git
+
+In Eclipse, `File -> Import -> Android -> Existing Android Code Into Workspace`
+and navigate to the `ActionBarSherlock/library` folder. If the project has many
+errors, right click and go to `Properties -> Java Compiler` and make sure the
+compiler compliance level is set to 1.6. You may also want to rename the project
+from the generic `library` to `actionbarsherlock`.
 
 To get `openxc`:
 
@@ -26,6 +36,12 @@ To get `openxc`:
 Next, go to `File -> Import -> General -> Existing Projects into Workspace`,
 browse to the `openxc-android` folder and import the `openxc` project within
 this repostory.
+
+Finally, if there are still errors in the `mpg` project, right click on the
+project, go to the `Android` tab and make sure there are no red X's in the
+Library section. If there are invalid entries, delete them and re-add the links
+to `openxc` and `actionbarsherlock`. This may be neccessary if those two
+directories are not in the same place as `mpg`.
 
 ## License
 
