@@ -1,26 +1,18 @@
 package com.ford.openxc.mpg;
 
-import org.achartengine.chart.BarChart.Type;
-
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
-
+import org.achartengine.chart.BarChart.Type;
 import org.achartengine.model.TimeSeries;
 import org.achartengine.model.XYSeries;
-
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
-
 import org.joda.time.DateMidnight;
 
 import android.database.Cursor;
-
 import android.graphics.Color;
-
 import android.os.Bundle;
-
 import android.util.Log;
-
 import android.view.ViewGroup;
 
 public class HistoricalChartFragment extends ChartFragment {

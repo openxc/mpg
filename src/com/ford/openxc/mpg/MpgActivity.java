@@ -2,14 +2,8 @@ package com.ford.openxc.mpg;
 
 import java.net.URI;
 
-import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,29 +12,31 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
-import android.support.v4.view.ViewPager;
-import android.support.v4.app.FragmentTransaction;
-
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.openxc.NoValueException;
 import com.openxc.VehicleManager;
 import com.openxc.VehicleManager.VehicleBinder;
 import com.openxc.measurements.FineOdometer;
 import com.openxc.measurements.FuelConsumed;
 import com.openxc.measurements.IgnitionStatus;
 import com.openxc.measurements.IgnitionStatus.IgnitionPosition;
-import com.openxc.measurements.UnrecognizedMeasurementTypeException;
 import com.openxc.measurements.Measurement;
+import com.openxc.measurements.UnrecognizedMeasurementTypeException;
 import com.openxc.measurements.VehicleSpeed;
-import com.openxc.sources.trace.TraceVehicleDataSource;
-import com.openxc.sources.DataSourceException;
-import com.openxc.NoValueException;
 import com.openxc.remote.VehicleServiceException;
+import com.openxc.sources.DataSourceException;
+import com.openxc.sources.trace.TraceVehicleDataSource;
 
 /* TODO: Send the range into a sharedpreferences.
  * Check on how many points before we die
@@ -266,7 +262,7 @@ public class MpgActivity extends SherlockFragmentActivity
                 try {
                     mVehicle.addSource(new TraceVehicleDataSource(
                                 MpgActivity.this,
-                                new URI("file:///sdcard/openxc/driving.json")));
+                                new URI("file:///sdcard/com.ford.openxc.mpg/trace.json")));
                 } catch (java.net.URISyntaxException e) {
                     Log.e(TAG, "Unable to load trace file", e);
                 } catch(DataSourceException e) {
@@ -308,7 +304,7 @@ public class MpgActivity extends SherlockFragmentActivity
 
     private void drawGraph(double time, double mpg, double speed) {
         ChartFragment fragment = (ChartFragment) getSupportFragmentManager().
-            findFragmentByTag(getFragmentTag(1));
+            findFragmentByTag(getFragmentTag(0));
         if(fragment != null) {
             fragment.addData(time, speed);
         } else {
@@ -316,7 +312,7 @@ public class MpgActivity extends SherlockFragmentActivity
         }
 
         fragment = (ChartFragment) getSupportFragmentManager().
-            findFragmentByTag(getFragmentTag(0));
+            findFragmentByTag(getFragmentTag(1));
         if(fragment != null) {
             fragment.addData(time, mpg);
         } else {
@@ -425,7 +421,11 @@ public class MpgActivity extends SherlockFragmentActivity
         mLastOdoCount = fineOdo;
 
         if(gas > 0.0) {
-            mLastMPG = currentDistance / currentGas;  //miles per hour
+            mLastMPG = currentDistance / currentGas;  //miles per gallon
+            if(mLastMPG > 100){
+                // max MPG is 100 MPG to keep the graph sane
+            	mLastMPG = 100;
+            }
             drawGraph(getTime(), mLastMPG, speedm);
         } else {
             drawGraph(getTime(), 0.0, speedm);

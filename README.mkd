@@ -4,12 +4,41 @@ OpenXC MPG
 This program is meant to show off (a possibility of) the [OpenXC][] project. It's awfully rough.
 
 ## Description
-This application uses [OpenXC][] and [AChartEngine][] for its main functionality. It takes in information such as trip distance, trip length, gas consumption
-and vehicle speed to determine your current fuel usage and fuel usage over a drive. After a drive is completed your fuel consumption/fuel efficiency is calculated and
- saved to a local SQLite database.
+
+This application uses [OpenXC][] and [AChartEngine][] for its main
+functionality. It takes in information such as trip distance, trip length, gas
+consumption and vehicle speed to determine your current fuel usage and fuel
+usage over a drive. After a drive is completed your fuel consumption/fuel
+efficiency is calculated and saved to a local SQLite database.
+
+## Dependencies
+
+The library dependencies of this project are all managed with Maven in the
+`pom.xml` with one exception - if you are using Eclipse, the ActionBarSherlock
+library must be downloaded seprately and imported as a project in Eclipse. This
+is due to a limitation with apklibs in the m2e-andoid plugin.
+
+Open the Android SDK managed and install API level 14 (4.0) (this can be
+accessed in Eclipse through `Window -> Android SDK Manager`.
+
+Clone the ActionBarSherlock project somewhere:
+
+    $ git clone https://github.com/JakeWharton/ActionBarSherlock.git
+
+then remove the file `ActionBarSherlock/library/libs/android-support-v4.jar`
+from the folder. Also edit `ActionBarSherlock/pom.xml` and change the value of
+`junit.version` from 4.10 to 4.8.
+
+In Eclipse, `File -> Import -> Existing Maven project` and navigate to
+`ActionBarSherlock/library` - it should detect the `pom.xml` here.
+
+Finally, right click on the `mpg` project, click `Properties`, then go to the
+`Android` section. In the `Library` section at the bottom of the window, add the
+`ActionBarSherlock` library as a dependency.
 
 ## Running
-This project was built with [Eclipse][], it can probably be imported back into there as well. 
+
+This project was built with [Eclipse][], it can probably be imported back into there as well.
 Otherwise take a look under bin/testopenxc.apk to see if that installs. It probably won't.
 
 ## License

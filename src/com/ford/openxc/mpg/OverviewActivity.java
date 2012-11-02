@@ -1,20 +1,14 @@
 package com.ford.openxc.mpg;
 
-import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
-
 import android.content.Intent;
 import android.os.Bundle;
-
-import android.speech.tts.TextToSpeech;
-
 import android.support.v4.app.FragmentTransaction;
-
 import android.util.Log;
 import android.view.KeyEvent;
+
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 public class OverviewActivity extends SherlockFragmentActivity {
     private static final String TAG = "OverviewActivity";
