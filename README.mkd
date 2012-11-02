@@ -16,21 +16,16 @@ efficiency is calculated and saved to a local SQLite database.
 There are two Android library project dependencies that must be imported into
 your Eclipse workspace, `openxc` and `actionbarsherlock`.
 
-Next, go to `File -> Import -> General -> Existing Projects into
-Workspace` and browse to the `openxc-android` repository. At the minimum, import
+Follow [these directions](http://actionbarsherlock.com/usage.html) to get
+`actionbarsherlock`.
 
-Clone the ActionBarSherlock project in the same location as the `mpg` folder:
-
-    $ git clone https://github.com/JakeWharton/ActionBarSherlock.git
-
-Next, go to `File -> Import -> General -> Existing Projects into
-Workspace`, browse to the `ActionBarSherlock` folder and import the project.
-
-Do the same for `openxc`:
+To get `openxc`:
 
     $ git clone https://github.com/openxc/openxc-android.git
 
-and import the `openxc` project within this repostory.
+Next, go to `File -> Import -> General -> Existing Projects into Workspace`,
+browse to the `openxc-android` folder and import the `openxc` project within
+this repostory.
 
 ## License
 
