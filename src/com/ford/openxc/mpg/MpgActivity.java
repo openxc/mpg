@@ -427,7 +427,7 @@ public class MpgActivity extends SherlockFragmentActivity {
             mLastMPG = currentDistance / currentGas;  //miles per gallon
             if(mLastMPG > 100){
                 // max MPG is 100 MPG to keep the graph sane
-            	mLastMPG = 100;
+                mLastMPG = 100;
             }
             drawGraph(getTime(), mLastMPG, speedm);
         } else {
