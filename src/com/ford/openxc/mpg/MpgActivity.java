@@ -399,6 +399,9 @@ public class MpgActivity extends SherlockFragmentActivity {
                     VehicleSpeed.class);
             if (measurement.getAge() < CAN_TIMEOUT) {
                 return true;
+            } else {
+                Log.d(TAG, "CAN message is " + measurement.getAge() +
+                        " seconds old -- not using");
             }
         } catch (UnrecognizedMeasurementTypeException e) {
             e.printStackTrace();
