@@ -1,9 +1,8 @@
 package com.ford.openxc.mpg;
 
 import java.net.URI;
+import java.util.Locale;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.Tab;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,11 +18,13 @@ import android.support.v4.view.ViewPager;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
+
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.openxc.NoValueException;
 import com.openxc.VehicleManager;
 import com.openxc.VehicleManager.VehicleBinder;
@@ -44,8 +45,7 @@ import com.openxc.sources.trace.TraceVehicleDataSource;
  * Fix getLastData
  */
 
-public class MpgActivity extends SherlockFragmentActivity
-        implements TextToSpeech.OnInitListener {
+public class MpgActivity extends SherlockFragmentActivity {
     private final static String TAG = "MpgActivity";
     private final static int CAN_TIMEOUT = 30;
     private final static int SPEECH_DATA_REQUEST = 0;
@@ -66,6 +66,7 @@ public class MpgActivity extends SherlockFragmentActivity
     private MeasurementUpdater mMeasurementUpdater;
     private ViewPager mViewPager;
     private TabsAdapter mTabsAdapter;
+    private TextToSpeech mTts;
     private boolean TTSReady = false;
 
     @Override
@@ -108,10 +109,7 @@ public class MpgActivity extends SherlockFragmentActivity
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
         mDatabase = new DbHelper(this);
-
-        Intent checkIntent = new Intent();
-        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-        startActivityForResult(checkIntent, SPEECH_DATA_REQUEST);
+        createTextToSpeech(this);
     }
 
     @Override
@@ -121,62 +119,67 @@ public class MpgActivity extends SherlockFragmentActivity
         // funky behavior.
         switch(event.getKeyCode()) {
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-            	if (event.getAction() == KeyEvent.ACTION_UP) {
-            		Log.i(TAG, "Dpad right, key up.");
-            		mViewPager.setCurrentItem(1);
-            	}
+                if (event.getAction() == KeyEvent.ACTION_UP) {
+                    Log.i(TAG, "Dpad right, key up.");
+                    mViewPager.setCurrentItem(1);
+                }
                 return true;
             case KeyEvent.KEYCODE_DPAD_LEFT:
-            	if (event.getAction() == KeyEvent.ACTION_UP) {
-            		Log.i(TAG, "Dpad left, key up.");
-            		mViewPager.setCurrentItem(0);
-            	}
+                if (event.getAction() == KeyEvent.ACTION_UP) {
+                    Log.i(TAG, "Dpad left, key up.");
+                    mViewPager.setCurrentItem(0);
+                }
                 return true;
             case KeyEvent.KEYCODE_DPAD_DOWN:
-            	if (event.getAction() == KeyEvent.ACTION_UP) {
-            		startActivity(new Intent(this, OverviewActivity.class));
-            	}
+                if (event.getAction() == KeyEvent.ACTION_UP) {
+                    startActivity(new Intent(this, OverviewActivity.class));
+                }
                 return true;
             case KeyEvent.KEYCODE_5:
-            	if (event.getAction() == KeyEvent.ACTION_UP) {
-	                if(TTSReady) {
-	                    if(mViewPager.getCurrentItem() == 0){
-	                        long roundedSpeed = Math.round(mLastSpeed);
-	                        String strMPG = roundedSpeed + "miles per hour";
-	                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
-	                    } else {
+                if (event.getAction() == KeyEvent.ACTION_UP) {
+                    if(TTSReady) {
+                        if(mViewPager.getCurrentItem() == 0){
+                            long roundedSpeed = Math.round(mLastSpeed);
+                            String strMPG = roundedSpeed + "miles per hour";
+                            mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+                        } else {
 
-	                        long roundedMPG = Math.round(mLastMPG);
-	                        String strMPG = roundedMPG + "miles per gallon";
-	                        mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
-	                    }
-	                } else {
-	                    Log.e(TAG, "Text to speech called before initialized.");
-	                }
-            	}
+                            long roundedMPG = Math.round(mLastMPG);
+                            String strMPG = roundedMPG + "miles per gallon";
+                            mTts.speak(strMPG, TextToSpeech.QUEUE_FLUSH, null);
+                        }
+                    } else {
+                        Log.e(TAG, "Text to speech called before initialized.");
+                    }
+                }
                 return true;
             }
-    	return super.dispatchKeyEvent(event);
+        return super.dispatchKeyEvent(event);
     }
 
-    private TextToSpeech mTts;
-    protected void onActivityResult(
-            int requestCode, int resultCode, Intent data) {
-        Log.i(TAG, "onActivityResult called.");
-        if (requestCode == SPEECH_DATA_REQUEST) {
-            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
-                // success, create the TTS instance
-                mTts = new TextToSpeech(this, (OnInitListener) this);
-                Log.i(TAG, "TTS object created!");
-            } else {
-                // missing data, install it
-                Log.i(TAG, "No TTS data!  Install!");
-                Intent installIntent = new Intent();
-                installIntent.setAction(
-                    TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-                startActivity(installIntent);
+    private void createTextToSpeech(final Context context) {
+        mTts = new TextToSpeech(context, new OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status == TextToSpeech.SUCCESS) {
+                    switch (mTts.isLanguageAvailable(Locale.US)) {
+                        case TextToSpeech.LANG_AVAILABLE:
+                        case TextToSpeech.LANG_COUNTRY_AVAILABLE:
+                        case TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE:
+                            mTts.setLanguage(Locale.US);
+                            //pass the tts back to the main
+                            //activity for use
+                            break;
+                        case TextToSpeech.LANG_MISSING_DATA:
+                            Intent installIntent = new Intent();
+                            installIntent.setAction(
+                                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                            context.startActivity(installIntent);
+                            break;
+                    }
+                }
             }
-        }
+        });
     }
 
     @Override
@@ -490,11 +493,5 @@ public class MpgActivity extends SherlockFragmentActivity
         } catch (NoValueException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void onInit(int status) {
-        Log.i(TAG, "Text to speech finished initializing.");
-        TTSReady = true;
     }
 }
