@@ -45,9 +45,9 @@ directories are not in the same place as `mpg`.
 
 ## License
 
-Licensed under the [Apache License, Version 2.0][apache]
+Copyright (c) 2011-2013 Ford Motor Company
+Licensed under the BSD license.
 
-[apache]: http://www.apache.org/licenses/LICENSE-2.0.html
 [OpenXC]: http://openxcplatform.com
 [AChartEngine]: http://www.achartengine.org/
 [Eclipse]: http://eclipse.org/
