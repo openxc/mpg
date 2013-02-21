@@ -19,23 +19,6 @@
         <android-maven.version>3.4.1</android-maven.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>central</id>
-            <url>http://repo1.maven.org/maven2</url>
-        </repository>
-        <repository>
-            <id>fiesta</id>
-            <url>http://fiesta.eecs.umich.edu:8000/mvn/</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>com.google.android</groupId>
