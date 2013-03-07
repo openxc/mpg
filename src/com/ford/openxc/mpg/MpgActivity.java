@@ -28,7 +28,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.openxc.NoValueException;
 import com.openxc.VehicleManager;
 import com.openxc.VehicleManager.VehicleBinder;
-import com.openxc.measurements.FineOdometer;
+import com.openxc.measurements.Odometer;
 import com.openxc.measurements.FuelConsumed;
 import com.openxc.measurements.IgnitionStatus;
 import com.openxc.measurements.IgnitionStatus.IgnitionPosition;
@@ -363,12 +363,11 @@ public class MpgActivity extends SherlockFragmentActivity {
         return temp;
     }
 
-    private double getFineOdometer() {
-        FineOdometer fineOdo;
+    private double getOdometer() {
         double temp = -1;
         try {
-            fineOdo = (FineOdometer) mVehicle.get(FineOdometer.class);
-            temp = fineOdo.getValue().doubleValue();
+            Odometer odo = (Odometer) mVehicle.get(Odometer.class);
+            temp = odo.getValue().doubleValue();
         } catch (UnrecognizedMeasurementTypeException e) {
             e.printStackTrace();
         } catch (NoValueException e) {
@@ -413,7 +412,7 @@ public class MpgActivity extends SherlockFragmentActivity {
 
     private void getMeasurements() {
         double speedm = getSpeed();
-        double fineOdo = getFineOdometer();
+        double fineOdo = getOdometer();
         double gas = getGasConsumed();
 
         speedm *= 0.62137;  //Converting from kph to mph
@@ -477,8 +476,7 @@ public class MpgActivity extends SherlockFragmentActivity {
 
     private void recordCheckpoint() {
         try {
-            FineOdometer oMeas = (FineOdometer) mVehicle.get(
-                    FineOdometer.class);
+            Odometer oMeas = (Odometer) mVehicle.get(Odometer.class);
             final double distanceTravelled = oMeas.getValue().doubleValue();
             FuelConsumed fMeas = (FuelConsumed) mVehicle.get(
                     FuelConsumed.class);
